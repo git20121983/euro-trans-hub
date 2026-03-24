@@ -56,6 +56,21 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Map */}
+        <div className="mt-10 rounded-xl overflow-hidden border border-primary-foreground/10 h-48">
+          <iframe
+            title="Euro Trans Logistics — Первомайськ"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d42240.45!2d36.62!3d48.045!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40c5a5c0e5a4f5b7%3A0x4a0f5c5f5b5f5b5f!2z0J_QtdGA0LLQvtC80LDQudGB0YzQug!5e0!3m2!1suk!2sua!4v1700000000000"
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            className="w-full h-full"
+          />
+        </div>
+
         <div className="mt-12 pt-8 border-t border-primary-foreground/10 text-center text-sm text-primary-foreground/50">
           © {new Date().getFullYear()} Euro Trans Logistics. Всі права захищені.
         </div>
