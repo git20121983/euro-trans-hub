@@ -32,8 +32,8 @@ export default function Footer() {
             <h4 className="font-display font-semibold mb-4">Контакти</h4>
             <ul className="space-y-3 text-sm text-primary-foreground/70">
               <li className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-secondary" />
-                м. Первомайськ, Миколаївська обл.
+                <MapPin className="w-4 h-4 text-secondary shrink-0" />
+                вул. Одеська, 45, м. Первомайськ, Миколаївська обл., 55201
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-secondary" />
