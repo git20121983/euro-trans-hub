@@ -41,7 +41,7 @@ export default function ContactsPage() {
                 <h2 className="font-display text-2xl font-bold">Наші контакти</h2>
 
                 {[
-                  { icon: MapPin, title: "Адреса", text: "м. Первомайськ, Миколаївська область, Україна" },
+                  { icon: MapPin, title: "Адреса", text: "вул. Одеська, 45, м. Первомайськ, Миколаївська обл., 55201" },
                   { icon: Phone, title: "Телефон", text: "+380 (XX) XXX-XX-XX" },
                   { icon: Mail, title: "Email", text: "info@eurotranslog.ua" },
                   { icon: Clock, title: "Графік", text: "Пн-Пт: 08:00-18:00, Сб: 09:00-14:00" },
