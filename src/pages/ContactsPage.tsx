@@ -41,7 +41,7 @@ export default function ContactsPage() {
                 <h2 className="font-display text-2xl font-bold">Наші контакти</h2>
 
                 {[
-                  { icon: MapPin, title: "Адреса", text: "м. Первомайськ, Миколаївська область, Україна" },
+                  { icon: MapPin, title: "Адреса", text: "вул. Одеська, 45, м. Первомайськ, Миколаївська обл., 55201" },
                   { icon: Phone, title: "Телефон", text: "+380 (XX) XXX-XX-XX" },
                   { icon: Mail, title: "Email", text: "info@eurotranslog.ua" },
                   { icon: Clock, title: "Графік", text: "Пн-Пт: 08:00-18:00, Сб: 09:00-14:00" },
@@ -69,13 +69,19 @@ export default function ContactsPage() {
                   </div>
                 </div>
 
-                {/* Map placeholder */}
-                <div className="rounded-xl overflow-hidden border border-border h-64 bg-muted flex items-center justify-center">
-                  <div className="text-center text-muted-foreground">
-                    <MapPin className="w-10 h-10 mx-auto mb-2" />
-                    <p className="font-medium">м. Первомайськ</p>
-                    <p className="text-sm">Миколаївська область</p>
-                  </div>
+                {/* Google Maps Embed */}
+                <div className="rounded-xl overflow-hidden border border-border h-72">
+                  <iframe
+                    title="Euro Trans Logistics — Первомайськ"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d42240.45!2d36.62!3d48.045!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40c5a5c0e5a4f5b7%3A0x4a0f5c5f5b5f5b5f!2z0J_QtdGA0LLQvtC80LDQudGB0YzQug!5e0!3m2!1suk!2sua!4v1700000000000"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    className="w-full h-full"
+                  />
                 </div>
               </div>
             </AnimatedSection>
