@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BottomTabBar from "@/components/BottomTabBar";
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import ServicesPage from "./pages/ServicesPage";
@@ -23,7 +24,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Navbar />
-        <main className="min-h-screen">
+        <main className="min-h-screen pb-16 lg:pb-0">
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
@@ -36,6 +37,7 @@ const App = () => (
           </Routes>
         </main>
         <Footer />
+        <BottomTabBar />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
