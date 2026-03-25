@@ -21,7 +21,7 @@ export default function BottomTabBar() {
               key={tab.path}
               to={tab.path}
               className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors ${
-                isActive ? "text-secondary" : "text-muted-foreground"
+                isActive ? "text-secondary" : "text-foreground/40"
               }`}
             >
               <tab.icon className={`w-5 h-5 ${isActive ? "stroke-[2.5]" : ""}`} />
