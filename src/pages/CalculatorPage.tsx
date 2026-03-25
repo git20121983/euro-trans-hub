@@ -1,13 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calculator, ArrowRight, Fuel, Info } from "lucide-react";
+import { Calculator, ArrowRight, Fuel, Info, MapPin, Route } from "lucide-react";
 import AnimatedSection from "@/components/AnimatedSection";
+import { searchCities, calculateDistance, type City } from "@/lib/cities";
 
-const FUEL_CONSUMPTION = 33; // л/100км
-const OVERHEAD_RATE = 1.15; // +15% амортизація + зарплата
+const FUEL_CONSUMPTION = 33;
+const OVERHEAD_RATE = 1.15;
 const FALLBACK_PRICE = 54.0;
 
 const cargoTypes = [
@@ -26,25 +27,82 @@ async function fetchFuelPrice(): Promise<{ price: number; date: string; isFallba
     );
     if (res.ok) {
       const html = await res.text();
-      // Try to extract diesel price from minfin page
       const match = html.match(/ДП[\s\S]*?<td[^>]*>([\d]+[.,][\d]+)/i);
       if (match) {
         const price = parseFloat(match[1].replace(",", "."));
-        if (price > 20 && price < 120) {
-          return { price, date: today, isFallback: false };
-        }
+        if (price > 20 && price < 120) return { price, date: today, isFallback: false };
       }
     }
-  } catch {
-    // fallback
-  }
+  } catch { /* fallback */ }
   return { price: FALLBACK_PRICE, date: today, isFallback: true };
+}
+
+function CityAutocomplete({ id, label, placeholder, value, onChange }: {
+  id: string; label: string; placeholder: string; value: string; onChange: (v: string) => void;
+}) {
+  const [suggestions, setSuggestions] = useState<City[]>([]);
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleChange = (v: string) => {
+    onChange(v);
+    const results = searchCities(v);
+    setSuggestions(results);
+    setOpen(results.length > 0);
+  };
+
+  const select = (city: City) => {
+    onChange(city.name);
+    setOpen(false);
+  };
+
+  return (
+    <div ref={ref} className="relative">
+      <Label htmlFor={id}>{label}</Label>
+      <div className="relative mt-1.5">
+        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          id={id}
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => handleChange(e.target.value)}
+          onFocus={() => { if (suggestions.length) setOpen(true); }}
+          className="pl-9"
+          autoComplete="off"
+        />
+      </div>
+      {open && suggestions.length > 0 && (
+        <div className="absolute z-50 w-full mt-1 rounded-lg border border-border bg-popover shadow-lg max-h-48 overflow-y-auto">
+          {suggestions.map((city) => (
+            <button
+              key={city.name}
+              type="button"
+              className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors flex items-center justify-between"
+              onClick={() => select(city)}
+            >
+              <span className="font-medium">{city.name}</span>
+              {city.region && <span className="text-xs text-muted-foreground">{city.region} обл.</span>}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function CalculatorPage() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [distance, setDistance] = useState("");
+  const [autoDistance, setAutoDistance] = useState<number | null>(null);
   const [weight, setWeight] = useState("");
   const [cargoType, setCargoType] = useState("");
   const [result, setResult] = useState<number | null>(null);
@@ -60,6 +118,17 @@ export default function CalculatorPage() {
       setFuelLoading(false);
     });
   }, []);
+
+  // Auto-calculate distance when both cities are selected
+  useEffect(() => {
+    const dist = calculateDistance(from, to);
+    if (dist !== null) {
+      setAutoDistance(dist);
+      setDistance(String(dist));
+    } else {
+      setAutoDistance(null);
+    }
+  }, [from, to]);
 
   const calculate = () => {
     if (!from || !to || !distance || !weight || !cargoType) return;
@@ -101,20 +170,30 @@ export default function CalculatorPage() {
 
               <div className="space-y-5">
                 <div className="grid sm:grid-cols-2 gap-5">
-                  <div>
-                    <Label htmlFor="from">Звідки</Label>
-                    <Input id="from" placeholder="Місто відправлення" value={from} onChange={(e) => setFrom(e.target.value)} className="mt-1.5" />
-                  </div>
-                  <div>
-                    <Label htmlFor="to">Куди</Label>
-                    <Input id="to" placeholder="Місто призначення" value={to} onChange={(e) => setTo(e.target.value)} className="mt-1.5" />
-                  </div>
+                  <CityAutocomplete id="from" label="Звідки" placeholder="Почніть вводити місто" value={from} onChange={setFrom} />
+                  <CityAutocomplete id="to" label="Куди" placeholder="Почніть вводити місто" value={to} onChange={setTo} />
                 </div>
 
+                {/* Distance with auto-calc indicator */}
                 <div className="grid sm:grid-cols-2 gap-5">
                   <div>
                     <Label htmlFor="distance">Відстань (км)</Label>
-                    <Input id="distance" type="number" placeholder="Наприклад: 450" value={distance} onChange={(e) => setDistance(e.target.value)} className="mt-1.5" />
+                    <div className="relative mt-1.5">
+                      <Route className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="distance"
+                        type="number"
+                        placeholder="Авто або вручну"
+                        value={distance}
+                        onChange={(e) => { setDistance(e.target.value); setAutoDistance(null); }}
+                        className="pl-9"
+                      />
+                    </div>
+                    {autoDistance !== null && (
+                      <p className="text-xs text-secondary mt-1 flex items-center gap-1">
+                        <Info className="w-3 h-3" /> Розраховано автоматично: ~{autoDistance} км
+                      </p>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="weight">Вага (тонн)</Label>
@@ -149,7 +228,7 @@ export default function CalculatorPage() {
                   </div>
                 </div>
 
-                {/* Fuel price info box */}
+                {/* Fuel price info */}
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/10 border border-secondary/20">
                   <Fuel className="w-5 h-5 text-secondary shrink-0" />
                   <div className="text-sm">
