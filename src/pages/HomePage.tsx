@@ -148,7 +148,7 @@ export default function HomePage() {
                   </Button>
                 </Link>
                 <Link to="/contacts">
-                  <Button size="lg" variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
+                  <Button size="lg" variant="outline" className="border-primary-foreground/30 text-primary-foreground bg-primary-foreground/10 hover:bg-primary-foreground/20">
                     Зв'язатися з нами
                   </Button>
                 </Link>
