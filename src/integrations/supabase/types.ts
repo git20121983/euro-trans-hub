@@ -14,16 +14,251 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      drivers: {
+        Row: {
+          assigned_truck_id: string | null
+          created_at: string
+          full_name: string
+          id: string
+          license_number: string | null
+          phone: string
+          salary_rate: number | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          assigned_truck_id?: string | null
+          created_at?: string
+          full_name: string
+          id?: string
+          license_number?: string | null
+          phone: string
+          salary_rate?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          assigned_truck_id?: string | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          license_number?: string | null
+          phone?: string
+          salary_rate?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drivers_assigned_truck_id_fkey"
+            columns: ["assigned_truck_id"]
+            isOneToOne: false
+            referencedRelation: "trucks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          cargo_type: string
+          cargo_weight: number | null
+          client_name: string
+          client_phone: string | null
+          client_user_id: string | null
+          created_at: string
+          depreciation_cost: number | null
+          destination: string
+          distance: number
+          driver_id: string | null
+          driver_salary: number | null
+          fuel_cost: number | null
+          fuel_price: number | null
+          id: string
+          net_profit: number | null
+          notes: string | null
+          order_number: string
+          origin: string
+          status: string
+          total_price: number | null
+          truck_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          cargo_type?: string
+          cargo_weight?: number | null
+          client_name: string
+          client_phone?: string | null
+          client_user_id?: string | null
+          created_at?: string
+          depreciation_cost?: number | null
+          destination: string
+          distance: number
+          driver_id?: string | null
+          driver_salary?: number | null
+          fuel_cost?: number | null
+          fuel_price?: number | null
+          id?: string
+          net_profit?: number | null
+          notes?: string | null
+          order_number?: string
+          origin: string
+          status?: string
+          total_price?: number | null
+          truck_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cargo_type?: string
+          cargo_weight?: number | null
+          client_name?: string
+          client_phone?: string | null
+          client_user_id?: string | null
+          created_at?: string
+          depreciation_cost?: number | null
+          destination?: string
+          distance?: number
+          driver_id?: string | null
+          driver_salary?: number | null
+          fuel_cost?: number | null
+          fuel_price?: number | null
+          id?: string
+          net_profit?: number | null
+          notes?: string | null
+          order_number?: string
+          origin?: string
+          status?: string
+          total_price?: number | null
+          truck_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_truck_id_fkey"
+            columns: ["truck_id"]
+            isOneToOne: false
+            referencedRelation: "trucks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      trucks: {
+        Row: {
+          created_at: string
+          fuel_consumption: number | null
+          id: string
+          last_service: string | null
+          mileage: number | null
+          model: string
+          next_service: string | null
+          plate_number: string
+          status: string
+          updated_at: string
+          year: number | null
+        }
+        Insert: {
+          created_at?: string
+          fuel_consumption?: number | null
+          id?: string
+          last_service?: string | null
+          mileage?: number | null
+          model: string
+          next_service?: string | null
+          plate_number: string
+          status?: string
+          updated_at?: string
+          year?: number | null
+        }
+        Update: {
+          created_at?: string
+          fuel_consumption?: number | null
+          id?: string
+          last_service?: string | null
+          mileage?: number | null
+          model?: string
+          next_service?: string | null
+          plate_number?: string
+          status?: string
+          updated_at?: string
+          year?: number | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "manager" | "driver" | "client"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +385,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "manager", "driver", "client"],
+    },
   },
 } as const
