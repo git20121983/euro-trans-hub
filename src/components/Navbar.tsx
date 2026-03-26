@@ -48,6 +48,9 @@ export default function Navbar() {
           <Link to="/dashboard">
             <Button variant="outline" size="sm">Особистий кабінет</Button>
           </Link>
+          <Link to="/auth">
+            <Button size="sm" className="accent-gradient text-secondary-foreground border-0">CRM Вхід</Button>
+          </Link>
         </div>
 
         {/* Mobile toggle */}
