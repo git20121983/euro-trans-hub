@@ -48,6 +48,9 @@ export default function Navbar() {
           <Link to="/dashboard">
             <Button variant="outline" size="sm">Особистий кабінет</Button>
           </Link>
+          <Link to="/auth">
+            <Button size="sm" className="accent-gradient text-secondary-foreground border-0">CRM Вхід</Button>
+          </Link>
         </div>
 
         {/* Mobile toggle */}
@@ -79,6 +82,9 @@ export default function Navbar() {
             ))}
             <Link to="/dashboard" onClick={() => setOpen(false)}>
               <Button variant="outline" size="sm" className="w-full mt-2">Особистий кабінет</Button>
+            </Link>
+            <Link to="/auth" onClick={() => setOpen(false)}>
+              <Button size="sm" className="w-full mt-1 accent-gradient text-secondary-foreground border-0">CRM Вхід</Button>
             </Link>
           </div>
         </div>
