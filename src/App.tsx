@@ -4,9 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import BottomTabBar from "@/components/BottomTabBar";
+import PublicLayout from "@/layouts/PublicLayout";
+import AdminLayout from "@/layouts/AdminLayout";
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import ServicesPage from "./pages/ServicesPage";
@@ -15,7 +14,6 @@ import TrackingPage from "./pages/TrackingPage";
 import ContactsPage from "./pages/ContactsPage";
 import DashboardPage from "./pages/DashboardPage";
 import AuthPage from "./pages/AuthPage";
-import AdminLayout from "./layouts/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminFleet from "./pages/admin/AdminFleet";
@@ -34,29 +32,16 @@ const App = () => (
         <AuthProvider>
           <Routes>
             {/* Public site */}
-            <Route
-              path="/*"
-              element={
-                <>
-                  <Navbar />
-                  <main className="min-h-screen pb-16 lg:pb-0">
-                    <Routes>
-                      <Route path="/" element={<HomePage />} />
-                      <Route path="/about" element={<AboutPage />} />
-                      <Route path="/services" element={<ServicesPage />} />
-                      <Route path="/calculator" element={<CalculatorPage />} />
-                      <Route path="/tracking" element={<TrackingPage />} />
-                      <Route path="/contacts" element={<ContactsPage />} />
-                      <Route path="/dashboard" element={<DashboardPage />} />
-                      <Route path="/auth" element={<AuthPage />} />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </main>
-                  <Footer />
-                  <BottomTabBar />
-                </>
-              }
-            />
+            <Route element={<PublicLayout />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/services" element={<ServicesPage />} />
+              <Route path="/calculator" element={<CalculatorPage />} />
+              <Route path="/tracking" element={<TrackingPage />} />
+              <Route path="/contacts" element={<ContactsPage />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/auth" element={<AuthPage />} />
+            </Route>
 
             {/* Admin CRM */}
             <Route path="/admin" element={<AdminLayout />}>
@@ -66,6 +51,8 @@ const App = () => (
               <Route path="drivers" element={<AdminDrivers />} />
               <Route path="finance" element={<AdminFinance />} />
             </Route>
+
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>
