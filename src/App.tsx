@@ -53,6 +53,9 @@ const App = () => (
               <Route path="finance" element={<AdminFinance />} />
             </Route>
 
+            {/* Driver mobile interface */}
+            <Route path="/driver" element={<DriverDashboard />} />
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
