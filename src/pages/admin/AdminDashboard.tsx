@@ -38,7 +38,7 @@ export default function AdminDashboard() {
       const trucks = trucksRes.data ?? [];
 
       setStats({
-        activeTrips: orders.filter((o) => o.status === "in_transit").length,
+        activeTrips: orders.filter((o) => ["in_transit", "customs", "unloading", "planning"].includes(o.status)).length,
         monthRevenue: orders
           .filter((o) => o.status === "completed")
           .reduce((sum, o) => sum + (o.total_price ?? 0), 0),
