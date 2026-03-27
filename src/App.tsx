@@ -19,6 +19,7 @@ import AdminOrders from "./pages/admin/AdminOrders";
 import AdminFleet from "./pages/admin/AdminFleet";
 import AdminDrivers from "./pages/admin/AdminDrivers";
 import AdminFinance from "./pages/admin/AdminFinance";
+import DriverDashboard from "./pages/DriverDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +52,9 @@ const App = () => (
               <Route path="drivers" element={<AdminDrivers />} />
               <Route path="finance" element={<AdminFinance />} />
             </Route>
+
+            {/* Driver mobile interface */}
+            <Route path="/driver" element={<DriverDashboard />} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
