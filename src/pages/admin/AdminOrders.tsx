@@ -130,11 +130,15 @@ export default function AdminOrders() {
                               <div
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
-                                className={`rounded-lg border border-border bg-card p-3 space-y-2 transition-shadow ${
+                                className={`rounded-lg border border-border bg-card p-3 space-y-2 transition-shadow cursor-pointer ${
                                   snapshot.isDragging
                                     ? "shadow-lg shadow-secondary/20 border-secondary/50"
                                     : "hover:border-muted-foreground/30"
                                 }`}
+                                onClick={() => {
+                                  setSelectedOrder(order);
+                                  setDetailOpen(true);
+                                }}
                               >
                                 {/* Drag handle + order number */}
                                 <div className="flex items-center gap-1.5">
