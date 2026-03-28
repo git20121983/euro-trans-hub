@@ -4,6 +4,7 @@ import { Package, MapPin, User, GripVertical, Phone } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import type { Tables } from "@/integrations/supabase/types";
 import { toast } from "sonner";
+import OrderDetailPanel from "@/components/admin/OrderDetailPanel";
 
 type Order = Tables<"orders">;
 
@@ -31,6 +32,8 @@ const statusBadgeColors: Record<string, string> = {
 export default function AdminOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [drivers, setDrivers] = useState<Tables<"drivers">[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -127,11 +130,15 @@ export default function AdminOrders() {
                               <div
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
-                                className={`rounded-lg border border-border bg-card p-3 space-y-2 transition-shadow ${
+                                className={`rounded-lg border border-border bg-card p-3 space-y-2 transition-shadow cursor-pointer ${
                                   snapshot.isDragging
                                     ? "shadow-lg shadow-secondary/20 border-secondary/50"
                                     : "hover:border-muted-foreground/30"
                                 }`}
+                                onClick={() => {
+                                  setSelectedOrder(order);
+                                  setDetailOpen(true);
+                                }}
                               >
                                 {/* Drag handle + order number */}
                                 <div className="flex items-center gap-1.5">
@@ -191,6 +198,13 @@ export default function AdminOrders() {
           })}
         </div>
       </DragDropContext>
+
+      <OrderDetailPanel
+        order={selectedOrder}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        driverName={selectedOrder ? getDriverName(selectedOrder.driver_id) : null}
+      />
     </div>
   );
 }
