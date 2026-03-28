@@ -61,6 +61,44 @@ export type Database = {
           },
         ]
       }
+      order_events: {
+        Row: {
+          created_at: string
+          description: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          order_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          order_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          order_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           cargo_type: string
