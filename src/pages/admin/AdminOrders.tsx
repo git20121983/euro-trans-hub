@@ -4,6 +4,7 @@ import { Package, MapPin, User, GripVertical, Phone } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import type { Tables } from "@/integrations/supabase/types";
 import { toast } from "sonner";
+import OrderDetailPanel from "@/components/admin/OrderDetailPanel";
 
 type Order = Tables<"orders">;
 
