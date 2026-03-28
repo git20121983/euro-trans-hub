@@ -32,6 +32,8 @@ const statusBadgeColors: Record<string, string> = {
 export default function AdminOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [drivers, setDrivers] = useState<Tables<"drivers">[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
