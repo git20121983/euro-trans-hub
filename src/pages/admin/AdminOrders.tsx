@@ -198,6 +198,13 @@ export default function AdminOrders() {
           })}
         </div>
       </DragDropContext>
+
+      <OrderDetailPanel
+        order={selectedOrder}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        driverName={selectedOrder ? getDriverName(selectedOrder.driver_id) : null}
+      />
     </div>
   );
 }
