@@ -101,6 +101,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          actual_fuel_cost: number | null
           cargo_type: string
           cargo_weight: number | null
           client_name: string
@@ -120,11 +121,13 @@ export type Database = {
           order_number: string
           origin: string
           status: string
+          toll_cost: number | null
           total_price: number | null
           truck_id: string | null
           updated_at: string
         }
         Insert: {
+          actual_fuel_cost?: number | null
           cargo_type?: string
           cargo_weight?: number | null
           client_name: string
@@ -144,11 +147,13 @@ export type Database = {
           order_number?: string
           origin: string
           status?: string
+          toll_cost?: number | null
           total_price?: number | null
           truck_id?: string | null
           updated_at?: string
         }
         Update: {
+          actual_fuel_cost?: number | null
           cargo_type?: string
           cargo_weight?: number | null
           client_name?: string
@@ -168,6 +173,7 @@ export type Database = {
           order_number?: string
           origin?: string
           status?: string
+          toll_cost?: number | null
           total_price?: number | null
           truck_id?: string | null
           updated_at?: string
@@ -225,6 +231,7 @@ export type Database = {
           fuel_consumption: number | null
           id: string
           last_service: string | null
+          last_service_mileage: number | null
           mileage: number | null
           model: string
           next_service: string | null
@@ -238,6 +245,7 @@ export type Database = {
           fuel_consumption?: number | null
           id?: string
           last_service?: string | null
+          last_service_mileage?: number | null
           mileage?: number | null
           model: string
           next_service?: string | null
@@ -251,6 +259,7 @@ export type Database = {
           fuel_consumption?: number | null
           id?: string
           last_service?: string | null
+          last_service_mileage?: number | null
           mileage?: number | null
           model?: string
           next_service?: string | null

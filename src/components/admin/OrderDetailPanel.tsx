@@ -5,10 +5,13 @@ import {
   Sheet, SheetContent, SheetHeader, SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Clock, FileText, Upload, MapPin, User, Phone,
-  Package, Truck, Loader2, Download, Image, File
+  Package, Truck, Loader2, Download, File, DollarSign,
+  Fuel, AlertTriangle
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -35,6 +38,8 @@ interface OrderDetailPanelProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   driverName: string | null;
+  truckPlate?: string | null;
+  onOrderUpdate?: () => void;
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
@@ -47,17 +52,25 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   completed: { label: "Завершено", color: "bg-green-500" },
 };
 
-export default function OrderDetailPanel({ order, open, onOpenChange, driverName }: OrderDetailPanelProps) {
+const FUEL_RATE = 33; // л/100км
+const DRIVER_SALARY_RATE = 6; // грн/км
+
+export default function OrderDetailPanel({ order, open, onOpenChange, driverName, truckPlate, onOrderUpdate }: OrderDetailPanelProps) {
   const [events, setEvents] = useState<OrderEvent[]>([]);
   const [files, setFiles] = useState<StorageFile[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [loadingFiles, setLoadingFiles] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [actualFuelCost, setActualFuelCost] = useState("");
+  const [tollCost, setTollCost] = useState("");
+  const [savingFinance, setSavingFinance] = useState(false);
 
   useEffect(() => {
     if (!order || !open) return;
     fetchEvents();
     fetchFiles();
+    setActualFuelCost(order.actual_fuel_cost?.toString() ?? "");
+    setTollCost(order.toll_cost?.toString() ?? "0");
   }, [order?.id, open]);
 
   const fetchEvents = async () => {
@@ -86,19 +99,15 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
     const file = e.target.files?.[0];
     if (!file || !order) return;
     setUploading(true);
-
     const ext = file.name.split(".").pop();
     const path = `${order.id}/${Date.now()}.${ext}`;
-
     const { error } = await supabase.storage
       .from("order-documents")
       .upload(path, file, { cacheControl: "3600" });
-
     if (error) {
       toast.error("Помилка завантаження");
     } else {
       toast.success("Документ завантажено!");
-      // Log event
       await supabase.from("order_events").insert({
         order_id: order.id,
         event_type: "document_upload",
@@ -130,6 +139,42 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
     });
   };
 
+  // Finance calculations
+  const distance = order?.distance ? Number(order.distance) : 0;
+  const fuelPrice = order?.fuel_price ? Number(order.fuel_price) : 55;
+  const plannedFuelCost = (distance / 100) * FUEL_RATE * fuelPrice;
+  const driverSalary = distance * DRIVER_SALARY_RATE;
+  const toll = order?.toll_cost ? Number(order.toll_cost) : 0;
+  const totalPrice = order?.total_price ? Number(order.total_price) : 0;
+  const totalExpenses = plannedFuelCost + driverSalary + toll;
+  const netProfit = totalPrice - totalExpenses;
+  const margin = totalPrice > 0 ? (netProfit / totalPrice) * 100 : 0;
+
+  const actualFuel = order?.actual_fuel_cost ? Number(order.actual_fuel_cost) : null;
+  const fuelOverspend = actualFuel !== null ? ((actualFuel - plannedFuelCost) / plannedFuelCost) * 100 : null;
+
+  const saveFinanceData = async () => {
+    if (!order) return;
+    setSavingFinance(true);
+    const { error } = await supabase
+      .from("orders")
+      .update({
+        actual_fuel_cost: actualFuelCost ? parseFloat(actualFuelCost) : null,
+        toll_cost: tollCost ? parseFloat(tollCost) : 0,
+        fuel_cost: plannedFuelCost,
+        driver_salary: driverSalary,
+        net_profit: netProfit,
+      })
+      .eq("id", order.id);
+    if (error) {
+      toast.error("Помилка збереження");
+    } else {
+      toast.success("Фінанси оновлено!");
+      onOrderUpdate?.();
+    }
+    setSavingFinance(false);
+  };
+
   const statusInfo = order ? STATUS_LABELS[order.status] ?? { label: order.status, color: "bg-muted" } : null;
 
   return (
@@ -149,7 +194,6 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
               <SheetTitle className="text-left">{order.client_name}</SheetTitle>
             </SheetHeader>
 
-            {/* Order info summary */}
             <div className="py-4 space-y-3 border-b border-border">
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="flex items-center gap-2 text-muted-foreground">
@@ -170,15 +214,21 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
                     <span>{driverName}</span>
                   </div>
                 )}
+                {truckPlate && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Truck className="w-3.5 h-3.5" />
+                    <span>{truckPlate}</span>
+                  </div>
+                )}
                 {order.client_phone && (
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Phone className="w-3.5 h-3.5" />
                     <span>{order.client_phone}</span>
                   </div>
                 )}
-                {order.total_price && (
+                {totalPrice > 0 && (
                   <div className="flex items-center gap-2 font-semibold text-green-400">
-                    <span>{Number(order.total_price).toLocaleString("uk-UA")} ₴</span>
+                    <span>{totalPrice.toLocaleString("uk-UA")} ₴</span>
                   </div>
                 )}
               </div>
@@ -189,18 +239,44 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
               )}
             </div>
 
-            {/* Tabs: Timeline + Documents */}
-            <Tabs defaultValue="timeline" className="mt-4">
+            <Tabs defaultValue="details" className="mt-4">
               <TabsList className="w-full">
-                <TabsTrigger value="timeline" className="flex-1 gap-1.5">
+                <TabsTrigger value="details" className="flex-1 gap-1 text-xs">
+                  <Package className="w-3.5 h-3.5" />
+                  Деталі
+                </TabsTrigger>
+                <TabsTrigger value="timeline" className="flex-1 gap-1 text-xs">
                   <Clock className="w-3.5 h-3.5" />
                   Історія
                 </TabsTrigger>
-                <TabsTrigger value="documents" className="flex-1 gap-1.5">
+                <TabsTrigger value="documents" className="flex-1 gap-1 text-xs">
                   <FileText className="w-3.5 h-3.5" />
-                  Документи ({files.length})
+                  Docs ({files.length})
+                </TabsTrigger>
+                <TabsTrigger value="finance" className="flex-1 gap-1 text-xs">
+                  <DollarSign className="w-3.5 h-3.5" />
+                  Фінанси
                 </TabsTrigger>
               </TabsList>
+
+              {/* Details */}
+              <TabsContent value="details" className="mt-4 space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { label: "Тип вантажу", value: order.cargo_type },
+                    { label: "Вага", value: order.cargo_weight ? `${order.cargo_weight} т` : "—" },
+                    { label: "Відстань", value: `${order.distance} км` },
+                    { label: "Водій", value: driverName ?? "Не призначено" },
+                    { label: "Авто", value: truckPlate ?? "Не призначено" },
+                    { label: "Створено", value: formatDate(order.created_at) },
+                  ].map((item) => (
+                    <div key={item.label} className="p-2 rounded-lg bg-muted/20 border border-border">
+                      <p className="text-[10px] text-muted-foreground uppercase">{item.label}</p>
+                      <p className="text-sm font-medium mt-0.5">{item.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </TabsContent>
 
               {/* Timeline */}
               <TabsContent value="timeline" className="mt-4">
@@ -214,10 +290,8 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
                   </div>
                 ) : (
                   <div className="relative space-y-0">
-                    {/* Timeline line */}
                     <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-border" />
-
-                    {events.map((ev, i) => {
+                    {events.map((ev) => {
                       const isStatus = ev.event_type === "status_change";
                       const isDoc = ev.event_type === "document_upload";
                       return (
@@ -246,7 +320,6 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
 
               {/* Documents */}
               <TabsContent value="documents" className="mt-4 space-y-3">
-                {/* Upload */}
                 <label className="block">
                   <Button variant="outline" className="w-full gap-2" disabled={uploading} asChild>
                     <span>
@@ -302,6 +375,88 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
                     })}
                   </div>
                 )}
+              </TabsContent>
+
+              {/* Finance */}
+              <TabsContent value="finance" className="mt-4 space-y-4">
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Планові витрати
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-3 rounded-lg bg-muted/20 border border-border">
+                      <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
+                        <Fuel className="w-3 h-3" />
+                        <span className="text-[10px] uppercase">Паливо (план)</span>
+                      </div>
+                      <p className="text-sm font-semibold">{plannedFuelCost.toLocaleString("uk-UA", { maximumFractionDigits: 0 })} ₴</p>
+                      <p className="text-[10px] text-muted-foreground">{FUEL_RATE} л/100км × {fuelPrice} ₴/л</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/20 border border-border">
+                      <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
+                        <User className="w-3 h-3" />
+                        <span className="text-[10px] uppercase">ЗП водія</span>
+                      </div>
+                      <p className="text-sm font-semibold">{driverSalary.toLocaleString("uk-UA")} ₴</p>
+                      <p className="text-[10px] text-muted-foreground">{DRIVER_SALARY_RATE} ₴/км × {distance} км</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-3 rounded-lg bg-muted/20 border border-border">
+                      <p className="text-[10px] text-muted-foreground uppercase">Дохід</p>
+                      <p className="text-sm font-semibold text-green-400">{totalPrice.toLocaleString("uk-UA")} ₴</p>
+                    </div>
+                    <div className={`p-3 rounded-lg border ${netProfit >= 0 ? "bg-green-500/5 border-green-500/20" : "bg-red-500/5 border-red-500/20"}`}>
+                      <p className="text-[10px] text-muted-foreground uppercase">Чистий прибуток</p>
+                      <p className={`text-sm font-semibold ${netProfit >= 0 ? "text-green-400" : "text-red-400"}`}>
+                        {netProfit.toLocaleString("uk-UA", { maximumFractionDigits: 0 })} ₴
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">Маржа: {margin.toFixed(1)}%</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3 pt-3 border-t border-border">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Фактичні витрати
+                  </p>
+                  <div className="space-y-2">
+                    <div>
+                      <Label className="text-xs">Фактичні витрати на паливо, ₴</Label>
+                      <Input
+                        type="number"
+                        placeholder={plannedFuelCost.toFixed(0)}
+                        value={actualFuelCost}
+                        onChange={(e) => setActualFuelCost(e.target.value)}
+                        className="mt-1"
+                      />
+                      {actualFuelCost && fuelOverspend !== null && (
+                        <div className={`flex items-center gap-1 mt-1 text-xs ${
+                          fuelOverspend > 5 ? "text-red-400" : fuelOverspend > 0 ? "text-yellow-400" : "text-green-400"
+                        }`}>
+                          {fuelOverspend > 5 && <AlertTriangle className="w-3 h-3" />}
+                          <span>
+                            {fuelOverspend > 0 ? `+${fuelOverspend.toFixed(1)}% перевитрата` : `${fuelOverspend.toFixed(1)}% економія`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <Label className="text-xs">Дорожні збори (toll), ₴</Label>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        value={tollCost}
+                        onChange={(e) => setTollCost(e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                    <Button onClick={saveFinanceData} disabled={savingFinance} className="w-full" size="sm">
+                      {savingFinance ? "Збереження..." : "Зберегти фінанси"}
+                    </Button>
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
           </>
