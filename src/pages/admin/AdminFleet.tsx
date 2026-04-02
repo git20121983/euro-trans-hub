@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Truck, Wrench, Gauge } from "lucide-react";
+import { Truck, Wrench, Gauge, AlertTriangle } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
 type TruckRow = Tables<"trucks">;
@@ -26,6 +26,14 @@ export default function AdminFleet() {
     });
   }, []);
 
+  const getServiceHealth = (truck: TruckRow) => {
+    const mileage = truck.mileage ?? 0;
+    const lastServiceMileage = (truck as any).last_service_mileage ?? 0;
+    const kmSinceService = mileage - lastServiceMileage;
+    const needsService = kmSinceService >= 30000;
+    return { kmSinceService, needsService };
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="font-display text-2xl font-bold flex items-center gap-2">
@@ -42,17 +50,28 @@ export default function AdminFleet() {
             const consumption = truck.fuel_consumption ?? 33;
             const efficiency = consumption <= 33 ? "Норма" : "Вище норми";
             const effColor = consumption <= 33 ? "text-green-400" : "text-orange-400";
+            const { kmSinceService, needsService } = getServiceHealth(truck);
 
             return (
-              <div key={truck.id} className="rounded-xl border border-border bg-card p-5 space-y-3">
+              <div key={truck.id} className={`rounded-xl border bg-card p-5 space-y-3 ${
+                needsService ? "border-red-500/50" : "border-border"
+              }`}>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-display font-bold text-lg">{truck.plate_number}</p>
                     <p className="text-sm text-muted-foreground">{truck.model}</p>
                   </div>
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[truck.status] || ""}`}>
-                    {statusLabels[truck.status] || truck.status}
-                  </span>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[truck.status] || ""}`}>
+                      {statusLabels[truck.status] || truck.status}
+                    </span>
+                    {needsService && (
+                      <span className="flex items-center gap-1 text-[10px] text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full">
+                        <AlertTriangle className="w-3 h-3" />
+                        Потребує ТО
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 text-sm">
@@ -66,8 +85,10 @@ export default function AdminFleet() {
                   <div className="flex items-center gap-2">
                     <Wrench className="w-4 h-4 text-muted-foreground" />
                     <div>
-                      <p className="text-muted-foreground text-xs">Наступне ТО</p>
-                      <p className="font-medium">{truck.next_service || "—"}</p>
+                      <p className="text-muted-foreground text-xs">Після ТО</p>
+                      <p className={`font-medium ${needsService ? "text-red-400" : ""}`}>
+                        {kmSinceService.toLocaleString("uk-UA")} км
+                      </p>
                     </div>
                   </div>
                 </div>

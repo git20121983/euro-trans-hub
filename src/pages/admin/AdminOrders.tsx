@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Package, MapPin, User, GripVertical, Phone } from "lucide-react";
+import { Package, MapPin, User, GripVertical, Paperclip, Truck as TruckIcon } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import type { Tables } from "@/integrations/supabase/types";
 import { toast } from "sonner";
@@ -18,34 +18,51 @@ const KANBAN_COLUMNS = [
   { id: "completed", label: "Завершено", color: "bg-green-500", dotColor: "bg-green-400" },
 ] as const;
 
-const statusBadgeColors: Record<string, string> = {
-  new: "bg-blue-500/20 text-blue-300 border-blue-500/30",
-  planning: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
-  in_transit: "bg-orange-500/20 text-orange-300 border-orange-500/30",
-  customs: "bg-violet-500/20 text-violet-300 border-violet-500/30",
-  unloading: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
-  awaiting_payment: "bg-purple-500/20 text-purple-300 border-purple-500/30",
-  completed: "bg-green-500/20 text-green-300 border-green-500/30",
-  cancelled: "bg-red-500/20 text-red-300 border-red-500/30",
-};
+interface DriverInfo {
+  id: string;
+  full_name: string;
+}
+
+interface TruckInfo {
+  id: string;
+  plate_number: string;
+}
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [drivers, setDrivers] = useState<Tables<"drivers">[]>([]);
+  const [drivers, setDrivers] = useState<DriverInfo[]>([]);
+  const [trucks, setTrucks] = useState<TruckInfo[]>([]);
+  const [docsMap, setDocsMap] = useState<Record<string, number>>({});
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const [ordersRes, driversRes] = await Promise.all([
-        supabase.from("orders").select("*").order("created_at", { ascending: false }),
-        supabase.from("drivers").select("*"),
-      ]);
-      setOrders(ordersRes.data ?? []);
-      setDrivers(driversRes.data ?? []);
-    };
-    fetchData();
+  const fetchData = useCallback(async () => {
+    const [ordersRes, driversRes, trucksRes] = await Promise.all([
+      supabase.from("orders").select("*").order("created_at", { ascending: false }),
+      supabase.from("drivers").select("id, full_name"),
+      supabase.from("trucks").select("id, plate_number"),
+    ]);
+    const ordersData = ordersRes.data ?? [];
+    setOrders(ordersData);
+    setDrivers(driversRes.data ?? []);
+    setTrucks(trucksRes.data ?? []);
+
+    // Check which orders have documents
+    const docCounts: Record<string, number> = {};
+    for (const order of ordersData.slice(0, 50)) {
+      const { data: files } = await supabase.storage
+        .from("order-documents")
+        .list(order.id, { limit: 1 });
+      if (files && files.length > 0) {
+        docCounts[order.id] = files.length;
+      }
+    }
+    setDocsMap(docCounts);
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const onDragEnd = useCallback(async (result: DropResult) => {
     const { draggableId, destination } = result;
@@ -55,7 +72,6 @@ export default function AdminOrders() {
     const order = orders.find((o) => o.id === draggableId);
     if (!order || order.status === newStatus) return;
 
-    // Optimistic update
     setOrders((prev) =>
       prev.map((o) => (o.id === draggableId ? { ...o, status: newStatus } : o))
     );
@@ -66,7 +82,6 @@ export default function AdminOrders() {
       .eq("id", draggableId);
 
     if (error) {
-      // Revert
       setOrders((prev) =>
         prev.map((o) => (o.id === draggableId ? { ...o, status: order.status } : o))
       );
@@ -82,8 +97,17 @@ export default function AdminOrders() {
     return drivers.find((d) => d.id === driverId)?.full_name ?? null;
   };
 
+  const getTruckPlate = (truckId: string | null) => {
+    if (!truckId) return null;
+    return trucks.find((t) => t.id === truckId)?.plate_number ?? null;
+  };
+
   const getOrdersByStatus = (status: string) =>
     orders.filter((o) => o.status === status);
+
+  const handleOrderUpdate = () => {
+    fetchData();
+  };
 
   return (
     <div className="space-y-4">
@@ -101,8 +125,7 @@ export default function AdminOrders() {
           {KANBAN_COLUMNS.map((col) => {
             const colOrders = getOrdersByStatus(col.id);
             return (
-              <div key={col.id} className="flex-shrink-0 w-[280px]">
-                {/* Column header */}
+              <div key={col.id} className="flex-shrink-0 w-[310px]">
                 <div className="flex items-center gap-2 mb-3 px-1">
                   <div className={`w-2.5 h-2.5 rounded-full ${col.dotColor}`} />
                   <span className="font-display font-semibold text-sm">{col.label}</span>
@@ -124,6 +147,8 @@ export default function AdminOrders() {
                     >
                       {colOrders.map((order, index) => {
                         const driverName = getDriverName(order.driver_id);
+                        const truckPlate = getTruckPlate(order.truck_id);
+                        const hasDocs = !!docsMap[order.id];
                         return (
                           <Draggable key={order.id} draggableId={order.id} index={index}>
                             {(provided, snapshot) => (
@@ -140,7 +165,7 @@ export default function AdminOrders() {
                                   setDetailOpen(true);
                                 }}
                               >
-                                {/* Drag handle + order number */}
+                                {/* Drag handle + order number + docs icon */}
                                 <div className="flex items-center gap-1.5">
                                   <div {...provided.dragHandleProps} className="text-muted-foreground/50 hover:text-muted-foreground cursor-grab">
                                     <GripVertical className="w-3.5 h-3.5" />
@@ -148,6 +173,9 @@ export default function AdminOrders() {
                                   <span className="font-mono text-[10px] text-muted-foreground">
                                     {order.order_number}
                                   </span>
+                                  {hasDocs && (
+                                    <Paperclip className="w-3 h-3 text-blue-400 ml-auto" />
+                                  )}
                                 </div>
 
                                 {/* Client */}
@@ -163,16 +191,8 @@ export default function AdminOrders() {
                                   </span>
                                 </div>
 
-                                {/* Bottom row */}
-                                <div className="flex items-center justify-between pt-1 border-t border-border/50">
-                                  {order.total_price ? (
-                                    <span className="text-xs font-semibold text-green-400">
-                                      {Number(order.total_price).toLocaleString("uk-UA")} ₴
-                                    </span>
-                                  ) : (
-                                    <span className="text-xs text-muted-foreground">—</span>
-                                  )}
-
+                                {/* Driver + Truck */}
+                                <div className="flex items-center gap-2 flex-wrap">
                                   {driverName ? (
                                     <span className="flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded">
                                       <User className="w-2.5 h-2.5" />
@@ -182,6 +202,23 @@ export default function AdminOrders() {
                                     <span className="text-[10px] text-orange-400/70 bg-orange-500/10 px-1.5 py-0.5 rounded">
                                       Без водія
                                     </span>
+                                  )}
+                                  {truckPlate && (
+                                    <span className="flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded">
+                                      <TruckIcon className="w-2.5 h-2.5" />
+                                      {truckPlate}
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Price */}
+                                <div className="pt-1 border-t border-border/50">
+                                  {order.total_price ? (
+                                    <span className="text-xs font-semibold text-green-400">
+                                      {Number(order.total_price).toLocaleString("uk-UA")} ₴
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs text-muted-foreground">—</span>
                                   )}
                                 </div>
                               </div>
@@ -204,6 +241,8 @@ export default function AdminOrders() {
         open={detailOpen}
         onOpenChange={setDetailOpen}
         driverName={selectedOrder ? getDriverName(selectedOrder.driver_id) : null}
+        truckPlate={selectedOrder ? getTruckPlate(selectedOrder.truck_id) : null}
+        onOrderUpdate={handleOrderUpdate}
       />
     </div>
   );

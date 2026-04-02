@@ -20,12 +20,26 @@ export default function AuthPage() {
     setLoading(true);
 
     if (isLogin) {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         toast.error(error.message);
       } else {
         toast.success("Вхід успішний!");
-        navigate("/admin");
+        // Check role and redirect accordingly
+        if (data.user) {
+          const { data: roles } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", data.user.id);
+          const roleList = roles?.map((r) => r.role) ?? [];
+          if (roleList.includes("driver") && !roleList.includes("admin") && !roleList.includes("manager")) {
+            navigate("/driver");
+          } else if (roleList.includes("admin") || roleList.includes("manager")) {
+            navigate("/admin");
+          } else {
+            navigate("/dashboard");
+          }
+        }
       }
     } else {
       const { error } = await supabase.auth.signUp({
