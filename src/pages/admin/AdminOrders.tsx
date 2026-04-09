@@ -273,6 +273,11 @@ export default function AdminOrders() {
         truckPlate={selectedOrder ? getTruckPlate(selectedOrder.truck_id) : null}
         onOrderUpdate={handleOrderUpdate}
       />
+      <CreateOrderModal
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={handleOrderUpdate}
+      />
     </div>
   );
 }
