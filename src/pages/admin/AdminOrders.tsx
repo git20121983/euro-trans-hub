@@ -155,10 +155,10 @@ export default function AdminOrders() {
                               <div
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
-                                className={`rounded-lg border border-border bg-card p-3 space-y-2 transition-shadow cursor-pointer ${
+                                className={`rounded-lg border border-border bg-card p-3 space-y-2 cursor-pointer shadow-sm transition-all ${
                                   snapshot.isDragging
-                                    ? "shadow-lg shadow-secondary/20 border-secondary/50"
-                                    : "hover:border-muted-foreground/30"
+                                    ? "shadow-lg shadow-secondary/20 border-secondary/50 scale-[1.02]"
+                                    : "hover:border-muted-foreground/30 hover:shadow-md"
                                 }`}
                                 onClick={() => {
                                   setSelectedOrder(order);
