@@ -1,11 +1,13 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Package, MapPin, User, GripVertical, Paperclip, Truck as TruckIcon } from "lucide-react";
+import { Package, MapPin, User, GripVertical, Paperclip, Truck as TruckIcon, Plus } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import type { Tables } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import OrderDetailPanel from "@/components/admin/OrderDetailPanel";
+import CreateOrderModal from "@/components/admin/CreateOrderModal";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
 
 type Order = Tables<"orders">;
 
@@ -36,6 +38,7 @@ export default function AdminOrders() {
   const [docsMap, setDocsMap] = useState<Record<string, number>>({});
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
   const isMobile = useIsMobile();
 
@@ -212,8 +215,11 @@ export default function AdminOrders() {
         <h1 className="font-display text-xl sm:text-2xl font-bold flex items-center gap-2">
           <Package className="w-5 h-5 sm:w-6 sm:h-6 text-secondary" /> Замовлення
         </h1>
-        <div className="text-sm text-muted-foreground">
-          Всього: {orders.length}
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground">Всього: {orders.length}</span>
+          <Button size="sm" onClick={() => setCreateOpen(true)} className="gap-1.5">
+            <Plus className="w-4 h-4" /> Новий рейс
+          </Button>
         </div>
       </div>
 
@@ -266,6 +272,11 @@ export default function AdminOrders() {
         driverName={selectedOrder ? getDriverName(selectedOrder.driver_id) : null}
         truckPlate={selectedOrder ? getTruckPlate(selectedOrder.truck_id) : null}
         onOrderUpdate={handleOrderUpdate}
+      />
+      <CreateOrderModal
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={handleOrderUpdate}
       />
     </div>
   );
