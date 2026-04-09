@@ -28,7 +28,7 @@ export default function AdminLayout() {
               <SidebarTrigger className="mr-4" />
               <h2 className="font-display font-semibold text-sm text-foreground">CRM Панель</h2>
             </header>
-            <main className="flex-1 min-h-0 p-4 sm:p-6 overflow-auto bg-background">
+            <main className="flex-1 min-h-0 p-2 sm:p-4 md:p-6 overflow-auto bg-background">
               <Outlet />
             </main>
           </div>
