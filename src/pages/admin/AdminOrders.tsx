@@ -121,7 +121,7 @@ export default function AdminOrders() {
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex gap-3 overflow-x-auto pb-4 -mx-2 px-2 rounded-xl bg-muted/40 p-3">
+        <div className="flex gap-3 overflow-x-auto pb-4 rounded-xl bg-muted/30 p-3">
           {KANBAN_COLUMNS.map((col) => {
             const colOrders = getOrdersByStatus(col.id);
             return (
