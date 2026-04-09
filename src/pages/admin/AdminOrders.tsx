@@ -5,6 +5,7 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-p
 import type { Tables } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import OrderDetailPanel from "@/components/admin/OrderDetailPanel";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type Order = Tables<"orders">;
 
@@ -35,6 +36,8 @@ export default function AdminOrders() {
   const [docsMap, setDocsMap] = useState<Record<string, number>>({});
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
+  const isMobile = useIsMobile();
 
   const fetchData = useCallback(async () => {
     const [ordersRes, driversRes, trucksRes] = await Promise.all([
@@ -47,7 +50,6 @@ export default function AdminOrders() {
     setDrivers(driversRes.data ?? []);
     setTrucks(trucksRes.data ?? []);
 
-    // Check which orders have documents
     const docCounts: Record<string, number> = {};
     for (const order of ordersData.slice(0, 50)) {
       const { data: files } = await supabase.storage
@@ -109,11 +111,106 @@ export default function AdminOrders() {
     fetchData();
   };
 
+  const renderCard = (order: Order, index: number) => {
+    const driverName = getDriverName(order.driver_id);
+    const truckPlate = getTruckPlate(order.truck_id);
+    const hasDocs = !!docsMap[order.id];
+    return (
+      <Draggable key={order.id} draggableId={order.id} index={index}>
+        {(provided, snapshot) => (
+          <div
+            ref={provided.innerRef}
+            {...provided.draggableProps}
+            className={`rounded-lg border border-border bg-card p-3 space-y-2 cursor-pointer shadow-sm transition-all ${
+              snapshot.isDragging
+                ? "shadow-lg shadow-secondary/20 border-secondary/50 scale-[1.02]"
+                : "hover:border-muted-foreground/30 hover:shadow-md"
+            }`}
+            onClick={() => {
+              setSelectedOrder(order);
+              setDetailOpen(true);
+            }}
+          >
+            <div className="flex items-center gap-1.5">
+              <div {...provided.dragHandleProps} className="text-muted-foreground/50 hover:text-muted-foreground cursor-grab">
+                <GripVertical className="w-3.5 h-3.5" />
+              </div>
+              <span className="font-mono text-[10px] text-muted-foreground">
+                {order.order_number}
+              </span>
+              {hasDocs && (
+                <Paperclip className="w-3 h-3 text-blue-400 ml-auto" />
+              )}
+            </div>
+            <p className="font-medium text-sm truncate">{order.client_name}</p>
+            <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
+              <MapPin className="w-3 h-3 mt-0.5 text-secondary flex-shrink-0" />
+              <span className="line-clamp-2">{order.origin} → {order.destination}</span>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {driverName ? (
+                <span className="flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded">
+                  <User className="w-2.5 h-2.5" />{driverName}
+                </span>
+              ) : (
+                <span className="text-[10px] text-orange-400/70 bg-orange-500/10 px-1.5 py-0.5 rounded">Без водія</span>
+              )}
+              {truckPlate && (
+                <span className="flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded">
+                  <TruckIcon className="w-2.5 h-2.5" />{truckPlate}
+                </span>
+              )}
+            </div>
+            <div className="pt-1 border-t border-border/50">
+              {order.total_price ? (
+                <span className="text-xs font-semibold text-green-400">
+                  {Number(order.total_price).toLocaleString("uk-UA")} ₴
+                </span>
+              ) : (
+                <span className="text-xs text-muted-foreground">—</span>
+              )}
+            </div>
+          </div>
+        )}
+      </Draggable>
+    );
+  };
+
+  const renderColumn = (col: typeof KANBAN_COLUMNS[number], className?: string) => {
+    const colOrders = getOrdersByStatus(col.id);
+    return (
+      <div key={col.id} className={className ?? "flex-shrink-0 w-[310px]"}>
+        <div className="flex items-center gap-2 mb-3 px-2 py-1.5 rounded-lg bg-card border border-border">
+          <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${col.dotColor}`} />
+          <span className="font-display font-semibold text-sm text-foreground truncate">{col.label}</span>
+          <span className="ml-auto flex-shrink-0 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+            {colOrders.length}
+          </span>
+        </div>
+        <Droppable droppableId={col.id}>
+          {(provided, snapshot) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className={`min-h-[200px] rounded-xl border border-border p-2 space-y-2 transition-colors ${
+                snapshot.isDraggingOver ? "bg-secondary/10 border-secondary/40" : "bg-card"
+              }`}
+            >
+              {colOrders.map((order, index) => renderCard(order, index))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </div>
+    );
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl font-bold flex items-center gap-2">
-          <Package className="w-6 h-6 text-secondary" /> Замовлення — Kanban
+    <div className="flex flex-col h-full min-h-0">
+      {/* Sticky header */}
+      <div className="flex items-center justify-between pb-3 flex-shrink-0">
+        <h1 className="font-display text-xl sm:text-2xl font-bold flex items-center gap-2">
+          <Package className="w-5 h-5 sm:w-6 sm:h-6 text-secondary" /> Замовлення
         </h1>
         <div className="text-sm text-muted-foreground">
           Всього: {orders.length}
@@ -121,119 +218,45 @@ export default function AdminOrders() {
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex gap-3 overflow-x-auto pb-4 rounded-xl bg-muted/30 p-3">
-          {KANBAN_COLUMNS.map((col) => {
-            const colOrders = getOrdersByStatus(col.id);
-            return (
-              <div key={col.id} className="flex-shrink-0 w-[310px] min-w-0">
-                <div className="flex items-center gap-2 mb-3 px-2 py-1.5 rounded-lg bg-card border border-border">
-                  <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${col.dotColor}`} />
-                  <span className="font-display font-semibold text-sm text-foreground truncate">{col.label}</span>
-                  <span className="ml-auto flex-shrink-0 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                    {colOrders.length}
-                  </span>
-                </div>
-
-                <Droppable droppableId={col.id}>
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      className={`min-h-[200px] rounded-xl border border-border p-2 space-y-2 transition-colors ${
-                        snapshot.isDraggingOver
-                          ? "bg-secondary/10 border-secondary/40"
-                          : "bg-card"
-                      }`}
-                    >
-                      {colOrders.map((order, index) => {
-                        const driverName = getDriverName(order.driver_id);
-                        const truckPlate = getTruckPlate(order.truck_id);
-                        const hasDocs = !!docsMap[order.id];
-                        return (
-                          <Draggable key={order.id} draggableId={order.id} index={index}>
-                            {(provided, snapshot) => (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                className={`rounded-lg border border-border bg-card p-3 space-y-2 cursor-pointer shadow-sm transition-all ${
-                                  snapshot.isDragging
-                                    ? "shadow-lg shadow-secondary/20 border-secondary/50 scale-[1.02]"
-                                    : "hover:border-muted-foreground/30 hover:shadow-md"
-                                }`}
-                                onClick={() => {
-                                  setSelectedOrder(order);
-                                  setDetailOpen(true);
-                                }}
-                              >
-                                {/* Drag handle + order number + docs icon */}
-                                <div className="flex items-center gap-1.5">
-                                  <div {...provided.dragHandleProps} className="text-muted-foreground/50 hover:text-muted-foreground cursor-grab">
-                                    <GripVertical className="w-3.5 h-3.5" />
-                                  </div>
-                                  <span className="font-mono text-[10px] text-muted-foreground">
-                                    {order.order_number}
-                                  </span>
-                                  {hasDocs && (
-                                    <Paperclip className="w-3 h-3 text-blue-400 ml-auto" />
-                                  )}
-                                </div>
-
-                                {/* Client */}
-                                <p className="font-medium text-sm truncate">
-                                  {order.client_name}
-                                </p>
-
-                                {/* Route */}
-                                <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
-                                  <MapPin className="w-3 h-3 mt-0.5 text-secondary flex-shrink-0" />
-                                  <span className="line-clamp-2">
-                                    {order.origin} → {order.destination}
-                                  </span>
-                                </div>
-
-                                {/* Driver + Truck */}
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  {driverName ? (
-                                    <span className="flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded">
-                                      <User className="w-2.5 h-2.5" />
-                                      {driverName}
-                                    </span>
-                                  ) : (
-                                    <span className="text-[10px] text-orange-400/70 bg-orange-500/10 px-1.5 py-0.5 rounded">
-                                      Без водія
-                                    </span>
-                                  )}
-                                  {truckPlate && (
-                                    <span className="flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded">
-                                      <TruckIcon className="w-2.5 h-2.5" />
-                                      {truckPlate}
-                                    </span>
-                                  )}
-                                </div>
-
-                                {/* Price */}
-                                <div className="pt-1 border-t border-border/50">
-                                  {order.total_price ? (
-                                    <span className="text-xs font-semibold text-green-400">
-                                      {Number(order.total_price).toLocaleString("uk-UA")} ₴
-                                    </span>
-                                  ) : (
-                                    <span className="text-xs text-muted-foreground">—</span>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                          </Draggable>
-                        );
-                      })}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </div>
-            );
-          })}
-        </div>
+        {isMobile ? (
+          /* Mobile: Tab bar + single column */
+          <div className="flex flex-col flex-1 min-h-0">
+            <div className="flex overflow-x-auto gap-1 pb-2 flex-shrink-0 -mx-1 px-1 scrollbar-none">
+              {KANBAN_COLUMNS.map((col, i) => {
+                const count = getOrdersByStatus(col.id).length;
+                return (
+                  <button
+                    key={col.id}
+                    onClick={() => setActiveTab(i)}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap flex-shrink-0 transition-colors ${
+                      activeTab === i
+                        ? "bg-secondary text-secondary-foreground"
+                        : "bg-card border border-border text-muted-foreground"
+                    }`}
+                  >
+                    <div className={`w-2 h-2 rounded-full ${col.dotColor}`} />
+                    {col.label}
+                    {count > 0 && (
+                      <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${
+                        activeTab === i ? "bg-secondary-foreground/20" : "bg-muted"
+                      }`}>
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="flex-1 min-h-0 overflow-y-auto pt-1">
+              {renderColumn(KANBAN_COLUMNS[activeTab], "w-full")}
+            </div>
+          </div>
+        ) : (
+          /* Desktop: horizontal scroll kanban */
+          <div className="flex gap-3 overflow-x-auto pb-4 rounded-xl bg-muted/30 p-3 flex-1 min-h-0">
+            {KANBAN_COLUMNS.map((col) => renderColumn(col))}
+          </div>
+        )}
       </DragDropContext>
 
       <OrderDetailPanel
