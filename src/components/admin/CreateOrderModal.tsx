@@ -128,14 +128,12 @@ export default function CreateOrderModal({ open, onOpenChange, onCreated }: Crea
     }
 
     // Update driver/truck status if assigned
-    const updates: Promise<unknown>[] = [];
     if (driverId) {
-      updates.push(supabase.from("drivers").update({ status: "on_trip" }).eq("id", driverId));
+      await supabase.from("drivers").update({ status: "on_trip" }).eq("id", driverId);
     }
     if (truckId) {
-      updates.push(supabase.from("trucks").update({ status: "on_trip" }).eq("id", truckId));
+      await supabase.from("trucks").update({ status: "on_trip" }).eq("id", truckId);
     }
-    if (updates.length) await Promise.all(updates);
 
     toast.success("Рейс успішно створено!");
     resetForm();
