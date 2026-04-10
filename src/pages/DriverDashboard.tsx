@@ -4,7 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 import {
   Truck, MapPin, Camera, Shield, Package, CheckCircle,
-  Navigation, Clock, Upload, FileText, ChevronRight, Loader2, ExternalLink, Fuel
+  Navigation, Clock, Upload, FileText, ChevronRight, Loader2, ExternalLink, Fuel,
+  ThumbsUp, ThumbsDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -225,6 +226,47 @@ export default function DriverDashboard() {
     );
     const label = STATUS_FLOW.find((s) => s.id === newStatus)?.label ?? newStatus;
     toast.success(`Статус оновлено: ${label}`);
+  };
+
+  const acceptOrder = async (orderId: string) => {
+    // Log acceptance event
+    await supabase.from("order_events").insert({
+      order_id: orderId,
+      event_type: "driver_accepted",
+      description: "Водій прийняв рейс",
+    });
+    // Move to in_transit
+    await updateOrderStatus(orderId, "in_transit");
+    toast.success("✅ Рейс прийнято!");
+  };
+
+  const rejectOrder = async (orderId: string) => {
+    // Log rejection event
+    await supabase.from("order_events").insert({
+      order_id: orderId,
+      event_type: "driver_rejected",
+      description: "Водій відхилив рейс",
+    });
+
+    // Clear driver from order, reset status to 'new'
+    const { error } = await supabase
+      .from("orders")
+      .update({ driver_id: null, status: "new" })
+      .eq("id", orderId);
+
+    if (error) {
+      toast.error("Помилка відхилення рейсу");
+      return;
+    }
+
+    // Reset own driver status to available
+    if (driverRecord) {
+      await supabase.from("drivers").update({ status: "available" }).eq("id", driverRecord.id);
+      setDriverRecord((prev) => prev ? { ...prev, status: "available" } : null);
+    }
+
+    setOrders((prev) => prev.filter((o) => o.id !== orderId));
+    toast.info("Рейс відхилено. Диспетчер отримає повідомлення.");
   };
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -480,15 +522,45 @@ export default function DriverDashboard() {
                 </div>
 
                 <div className="px-4 py-3 border-t border-border space-y-2">
-                  {nextStatus && (
-                    <Button
-                      onClick={() => updateOrderStatus(order.id, nextStatus.id)}
-                      className="w-full"
-                      size="lg"
-                    >
-                      <ChevronRight className="w-4 h-4 mr-2" />
-                      {nextStatus.label}
-                    </Button>
+                  {/* Accept / Reject for newly assigned orders */}
+                  {order.status === "planning" ? (
+                    <div className="space-y-2">
+                      <p className="text-xs text-center text-muted-foreground font-medium">
+                        Підтвердіть призначений рейс
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          onClick={() => acceptOrder(order.id)}
+                          size="lg"
+                          className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <ThumbsUp className="w-4 h-4 mr-2" />
+                          Прийняти
+                        </Button>
+                        <Button
+                          onClick={() => rejectOrder(order.id)}
+                          size="lg"
+                          variant="destructive"
+                          className="w-full"
+                        >
+                          <ThumbsDown className="w-4 h-4 mr-2" />
+                          Відхилити
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {nextStatus && (
+                        <Button
+                          onClick={() => updateOrderStatus(order.id, nextStatus.id)}
+                          className="w-full"
+                          size="lg"
+                        >
+                          <ChevronRight className="w-4 h-4 mr-2" />
+                          {nextStatus.label}
+                        </Button>
+                      )}
+                    </>
                   )}
 
                   <div className="grid grid-cols-2 gap-2">
