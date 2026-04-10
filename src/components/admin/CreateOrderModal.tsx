@@ -122,7 +122,8 @@ export default function CreateOrderModal({ open, onOpenChange, onCreated }: Crea
     });
 
     if (error) {
-      toast.error("Помилка створення рейсу");
+      console.error("Detailed error creating order:", error);
+      toast.error(`Помилка: ${error.message || error.details || "Невідома помилка"}`);
       setLoading(false);
       return;
     }
