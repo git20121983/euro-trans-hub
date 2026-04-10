@@ -522,15 +522,45 @@ export default function DriverDashboard() {
                 </div>
 
                 <div className="px-4 py-3 border-t border-border space-y-2">
-                  {nextStatus && (
-                    <Button
-                      onClick={() => updateOrderStatus(order.id, nextStatus.id)}
-                      className="w-full"
-                      size="lg"
-                    >
-                      <ChevronRight className="w-4 h-4 mr-2" />
-                      {nextStatus.label}
-                    </Button>
+                  {/* Accept / Reject for newly assigned orders */}
+                  {order.status === "planning" ? (
+                    <div className="space-y-2">
+                      <p className="text-xs text-center text-muted-foreground font-medium">
+                        Підтвердіть призначений рейс
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          onClick={() => acceptOrder(order.id)}
+                          size="lg"
+                          className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <ThumbsUp className="w-4 h-4 mr-2" />
+                          Прийняти
+                        </Button>
+                        <Button
+                          onClick={() => rejectOrder(order.id)}
+                          size="lg"
+                          variant="destructive"
+                          className="w-full"
+                        >
+                          <ThumbsDown className="w-4 h-4 mr-2" />
+                          Відхилити
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {nextStatus && (
+                        <Button
+                          onClick={() => updateOrderStatus(order.id, nextStatus.id)}
+                          className="w-full"
+                          size="lg"
+                        >
+                          <ChevronRight className="w-4 h-4 mr-2" />
+                          {nextStatus.label}
+                        </Button>
+                      )}
+                    </>
                   )}
 
                   <div className="grid grid-cols-2 gap-2">
