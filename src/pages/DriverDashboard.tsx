@@ -4,7 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 import {
   Truck, MapPin, Camera, Shield, Package, CheckCircle,
-  Navigation, Clock, Upload, FileText, ChevronRight, Loader2, ExternalLink, Fuel
+  Navigation, Clock, Upload, FileText, ChevronRight, Loader2, ExternalLink, Fuel,
+  ThumbsUp, ThumbsDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
