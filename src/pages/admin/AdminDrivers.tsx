@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, Phone, Truck } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Driver = Tables<"drivers">;
@@ -22,6 +23,7 @@ const statusColors: Record<string, string> = {
 export default function AdminDrivers() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [trucks, setTrucks] = useState<Tables<"trucks">[]>([]);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     Promise.all([
@@ -37,7 +39,7 @@ export default function AdminDrivers() {
     trucks.find((t) => t.id === truckId);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-[100vw] overflow-hidden">
       <h1 className="font-display text-2xl font-bold flex items-center gap-2">
         <Users className="w-6 h-6 text-secondary" /> Водії
       </h1>
@@ -46,8 +48,46 @@ export default function AdminDrivers() {
         <div className="rounded-xl border border-border bg-card p-12 text-center text-muted-foreground">
           Водіїв не знайдено. Додайте через базу даних.
         </div>
+      ) : isMobile ? (
+        <div className="space-y-3">
+          {drivers.map((driver) => {
+            const truck = getTruck(driver.assigned_truck_id);
+            return (
+              <div
+                key={driver.id}
+                className="rounded-xl border border-border bg-card p-4 space-y-2"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <span className="font-medium break-words min-w-0">
+                    {driver.full_name}
+                  </span>
+                  <span
+                    className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[driver.status] || ""}`}
+                  >
+                    {statusLabels[driver.status] || driver.status}
+                  </span>
+                </div>
+
+                <a
+                  href={`tel:${driver.phone}`}
+                  className="flex items-center gap-1.5 text-sm text-secondary"
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  {driver.phone}
+                </a>
+
+                {truck && (
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Truck className="w-3.5 h-3.5 text-secondary" />
+                    {truck.plate_number} ({truck.model})
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       ) : (
-        <div className="rounded-xl border border-border bg-card overflow-hidden">
+        <div className="rounded-xl border border-border bg-card overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
@@ -61,21 +101,28 @@ export default function AdminDrivers() {
               {drivers.map((driver) => {
                 const truck = getTruck(driver.assigned_truck_id);
                 return (
-                  <tr key={driver.id} className="border-b border-border last:border-0 hover:bg-muted/10 transition-colors">
-                    <td className="p-4 font-medium">{driver.full_name}</td>
+                  <tr
+                    key={driver.id}
+                    className="border-b border-border last:border-0 hover:bg-muted/10 transition-colors"
+                  >
+                    <td className="p-4 font-medium break-words max-w-[200px]">
+                      {driver.full_name}
+                    </td>
                     <td className="p-4">
-                      <span className="flex items-center gap-1 text-muted-foreground">
+                      <span className="flex items-center gap-1 text-muted-foreground whitespace-nowrap">
                         <Phone className="w-3 h-3" /> {driver.phone}
                       </span>
                     </td>
                     <td className="p-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[driver.status] || ""}`}>
+                      <span
+                        className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${statusColors[driver.status] || ""}`}
+                      >
                         {statusLabels[driver.status] || driver.status}
                       </span>
                     </td>
                     <td className="p-4">
                       {truck ? (
-                        <span className="flex items-center gap-1 text-xs">
+                        <span className="flex items-center gap-1 text-xs whitespace-nowrap">
                           <Truck className="w-3 h-3 text-secondary" />
                           {truck.plate_number} ({truck.model})
                         </span>
