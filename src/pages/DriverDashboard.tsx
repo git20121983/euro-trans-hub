@@ -115,11 +115,54 @@ export default function DriverDashboard() {
     fetchDriverData(user.id);
   }, [user, fetchDriverData]);
 
+  // Realtime subscription — instant updates when orders change
   useEffect(() => {
-    if (!user) return;
-    const interval = setInterval(() => fetchDriverData(user.id), 30000);
-    return () => clearInterval(interval);
-  }, [user, fetchDriverData]);
+    if (!driverRecord) return;
+
+    const channel = supabase
+      .channel('driver-orders')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders',
+          filter: `driver_id=eq.${driverRecord.id}`,
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const newOrder = payload.new as Order;
+            setOrders((prev) => [newOrder, ...prev.filter(o => o.id !== newOrder.id)]);
+            // Mock push notification
+            toast.info(`🚛 Новий рейс: ${newOrder.origin} → ${newOrder.destination}`, {
+              duration: 8000,
+              description: `Клієнт: ${newOrder.client_name} | ${newOrder.distance} км`,
+            });
+            // Browser notification (if permitted)
+            if (Notification.permission === 'granted') {
+              new Notification('Euro Trans — Новий рейс', {
+                body: `${newOrder.origin} → ${newOrder.destination}\n${newOrder.client_name}`,
+              });
+            } else if (Notification.permission === 'default') {
+              Notification.requestPermission();
+            }
+          } else if (payload.eventType === 'UPDATE') {
+            const updated = payload.new as Order;
+            setOrders((prev) =>
+              prev.map((o) => (o.id === updated.id ? updated : o))
+                .filter((o) => o.status !== 'completed')
+            );
+          } else if (payload.eventType === 'DELETE') {
+            setOrders((prev) => prev.filter((o) => o.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [driverRecord]);
 
   const updateDriverStatus = async (newStatus: string) => {
     if (!driverRecord || updatingStatus) return;
