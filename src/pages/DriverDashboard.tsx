@@ -269,7 +269,7 @@ export default function DriverDashboard() {
       .eq("id", orderId);
 
     if (error) {
-      toast.error("Помилка оновлення статусу");
+      toast.error(`Помилка оновлення статусу рейсу: ${error.message}`);
       return;
     }
 
