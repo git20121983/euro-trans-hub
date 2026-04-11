@@ -217,7 +217,8 @@ export default function DriverDashboard() {
       .eq("id", driverRecord.id);
 
     if (driverError) {
-      toast.error("Помилка оновлення статусу водія");
+      toast.error(`Помилка оновлення статусу водія: ${driverError.message}`);
+      console.error("Driver status update error:", driverError);
       setUpdatingStatus(false);
       return;
     }
@@ -268,7 +269,7 @@ export default function DriverDashboard() {
       .eq("id", orderId);
 
     if (error) {
-      toast.error("Помилка оновлення статусу");
+      toast.error(`Помилка оновлення статусу рейсу: ${error.message}`);
       return;
     }
 
