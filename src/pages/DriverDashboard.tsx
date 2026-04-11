@@ -116,7 +116,7 @@ export default function DriverDashboard() {
     fetchDriverData(user.id);
   }, [user, fetchDriverData]);
 
-  // Realtime subscription — instant updates when orders change
+  // Realtime: orders
   useEffect(() => {
     if (!driverRecord) return;
 
@@ -134,12 +134,10 @@ export default function DriverDashboard() {
           if (payload.eventType === 'INSERT') {
             const newOrder = payload.new as Order;
             setOrders((prev) => [newOrder, ...prev.filter(o => o.id !== newOrder.id)]);
-            // Mock push notification
             toast.info(`🚛 Новий рейс: ${newOrder.origin} → ${newOrder.destination}`, {
               duration: 8000,
               description: `Клієнт: ${newOrder.client_name} | ${newOrder.distance} км`,
             });
-            // Browser notification (if permitted)
             if (Notification.permission === 'granted') {
               new Notification('Euro Trans — Новий рейс', {
                 body: `${newOrder.origin} → ${newOrder.destination}\n${newOrder.client_name}`,
@@ -160,10 +158,54 @@ export default function DriverDashboard() {
       )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [driverRecord]);
+
+  // Realtime: driver record (status synced from admin or other sources)
+  useEffect(() => {
+    if (!driverRecord) return;
+
+    const channel = supabase
+      .channel('driver-self')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'drivers',
+          filter: `id=eq.${driverRecord.id}`,
+        },
+        (payload) => {
+          const updated = payload.new as Driver;
+          setDriverRecord(updated);
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [driverRecord?.id]);
+
+  // Map order status → driver status
+  const orderToDriverStatus = (orderStatus: string): string => {
+    const map: Record<string, string> = {
+      in_transit: "in_transit",
+      customs: "customs",
+      unloading: "loading",
+      completed: "available",
+      cancelled: "available",
+    };
+    return map[orderStatus] ?? driverRecord?.status ?? "available";
+  };
+
+  // Map driver status → order status
+  const driverToOrderStatus = (driverStatus: string): string | null => {
+    const map: Record<string, string> = {
+      in_transit: "in_transit",
+      customs: "customs",
+      loading: "unloading",
+    };
+    return map[driverStatus] ?? null;
+  };
 
   const updateDriverStatus = async (newStatus: string) => {
     if (!driverRecord || updatingStatus) return;
@@ -182,15 +224,10 @@ export default function DriverDashboard() {
 
     setDriverRecord((prev) => prev ? { ...prev, status: newStatus } : null);
 
-    const activeOrder = orders[0];
+    // Sync active order status
+    const activeOrder = orders.find(o => !["completed", "cancelled"].includes(o.status));
     if (activeOrder) {
-      const orderStatusMap: Record<string, string> = {
-        available: activeOrder.status,
-        loading: activeOrder.status,
-        in_transit: "in_transit",
-        customs: "customs",
-      };
-      const newOrderStatus = orderStatusMap[newStatus];
+      const newOrderStatus = driverToOrderStatus(newStatus);
       if (newOrderStatus && newOrderStatus !== activeOrder.status) {
         const { error: orderError } = await supabase
           .from("orders")
@@ -210,6 +247,20 @@ export default function DriverDashboard() {
     setUpdatingStatus(false);
   };
 
+  const syncDriverStatusFromOrder = async (newOrderStatus: string) => {
+    if (!driverRecord) return;
+    const newDriverStatus = orderToDriverStatus(newOrderStatus);
+    if (newDriverStatus !== driverRecord.status) {
+      const { error } = await supabase
+        .from("drivers")
+        .update({ status: newDriverStatus })
+        .eq("id", driverRecord.id);
+      if (!error) {
+        setDriverRecord((prev) => prev ? { ...prev, status: newDriverStatus } : null);
+      }
+    }
+  };
+
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     const { error } = await supabase
       .from("orders")
@@ -221,21 +272,28 @@ export default function DriverDashboard() {
       return;
     }
 
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
-    );
+    // If completed, remove from list; otherwise update
+    if (newStatus === "completed" || newStatus === "cancelled") {
+      setOrders((prev) => prev.filter((o) => o.id !== orderId));
+    } else {
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
+      );
+    }
+
+    // Sync driver status to match trip state
+    await syncDriverStatusFromOrder(newStatus);
+
     const label = STATUS_FLOW.find((s) => s.id === newStatus)?.label ?? newStatus;
     toast.success(`Статус оновлено: ${label}`);
   };
 
   const acceptOrder = async (orderId: string) => {
-    // Log acceptance event
     await supabase.from("order_events").insert({
       order_id: orderId,
       event_type: "driver_accepted",
       description: "Водій прийняв рейс",
     });
-    // Move to in_transit
     await updateOrderStatus(orderId, "in_transit");
     toast.success("✅ Рейс прийнято!");
   };
