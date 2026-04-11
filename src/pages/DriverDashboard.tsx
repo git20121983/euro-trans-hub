@@ -269,13 +269,11 @@ export default function DriverDashboard() {
   };
 
   const acceptOrder = async (orderId: string) => {
-    // Log acceptance event
     await supabase.from("order_events").insert({
       order_id: orderId,
       event_type: "driver_accepted",
       description: "Водій прийняв рейс",
     });
-    // Move to in_transit
     await updateOrderStatus(orderId, "in_transit");
     toast.success("✅ Рейс прийнято!");
   };
