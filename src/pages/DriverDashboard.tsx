@@ -165,6 +165,28 @@ export default function DriverDashboard() {
     };
   }, [driverRecord]);
 
+  // Map order status → driver status
+  const orderToDriverStatus = (orderStatus: string): string => {
+    const map: Record<string, string> = {
+      in_transit: "in_transit",
+      customs: "customs",
+      unloading: "loading",
+      completed: "available",
+      cancelled: "available",
+    };
+    return map[orderStatus] ?? driverRecord?.status ?? "available";
+  };
+
+  // Map driver status → order status
+  const driverToOrderStatus = (driverStatus: string): string | null => {
+    const map: Record<string, string> = {
+      in_transit: "in_transit",
+      customs: "customs",
+      loading: "unloading",
+    };
+    return map[driverStatus] ?? null;
+  };
+
   const updateDriverStatus = async (newStatus: string) => {
     if (!driverRecord || updatingStatus) return;
     setUpdatingStatus(true);
@@ -182,15 +204,10 @@ export default function DriverDashboard() {
 
     setDriverRecord((prev) => prev ? { ...prev, status: newStatus } : null);
 
-    const activeOrder = orders[0];
+    // Sync active order status
+    const activeOrder = orders.find(o => !["completed", "cancelled"].includes(o.status));
     if (activeOrder) {
-      const orderStatusMap: Record<string, string> = {
-        available: activeOrder.status,
-        loading: activeOrder.status,
-        in_transit: "in_transit",
-        customs: "customs",
-      };
-      const newOrderStatus = orderStatusMap[newStatus];
+      const newOrderStatus = driverToOrderStatus(newStatus);
       if (newOrderStatus && newOrderStatus !== activeOrder.status) {
         const { error: orderError } = await supabase
           .from("orders")
@@ -210,6 +227,20 @@ export default function DriverDashboard() {
     setUpdatingStatus(false);
   };
 
+  const syncDriverStatusFromOrder = async (newOrderStatus: string) => {
+    if (!driverRecord) return;
+    const newDriverStatus = orderToDriverStatus(newOrderStatus);
+    if (newDriverStatus !== driverRecord.status) {
+      const { error } = await supabase
+        .from("drivers")
+        .update({ status: newDriverStatus })
+        .eq("id", driverRecord.id);
+      if (!error) {
+        setDriverRecord((prev) => prev ? { ...prev, status: newDriverStatus } : null);
+      }
+    }
+  };
+
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     const { error } = await supabase
       .from("orders")
@@ -221,9 +252,18 @@ export default function DriverDashboard() {
       return;
     }
 
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
-    );
+    // If completed, remove from list; otherwise update
+    if (newStatus === "completed" || newStatus === "cancelled") {
+      setOrders((prev) => prev.filter((o) => o.id !== orderId));
+    } else {
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
+      );
+    }
+
+    // Sync driver status to match trip state
+    await syncDriverStatusFromOrder(newStatus);
+
     const label = STATUS_FLOW.find((s) => s.id === newStatus)?.label ?? newStatus;
     toast.success(`Статус оновлено: ${label}`);
   };
