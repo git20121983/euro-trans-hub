@@ -116,7 +116,7 @@ export default function DriverDashboard() {
     fetchDriverData(user.id);
   }, [user, fetchDriverData]);
 
-  // Realtime subscription — instant updates when orders change
+  // Realtime: orders
   useEffect(() => {
     if (!driverRecord) return;
 
@@ -134,12 +134,10 @@ export default function DriverDashboard() {
           if (payload.eventType === 'INSERT') {
             const newOrder = payload.new as Order;
             setOrders((prev) => [newOrder, ...prev.filter(o => o.id !== newOrder.id)]);
-            // Mock push notification
             toast.info(`🚛 Новий рейс: ${newOrder.origin} → ${newOrder.destination}`, {
               duration: 8000,
               description: `Клієнт: ${newOrder.client_name} | ${newOrder.distance} км`,
             });
-            // Browser notification (if permitted)
             if (Notification.permission === 'granted') {
               new Notification('Euro Trans — Новий рейс', {
                 body: `${newOrder.origin} → ${newOrder.destination}\n${newOrder.client_name}`,
@@ -160,10 +158,32 @@ export default function DriverDashboard() {
       )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [driverRecord]);
+
+  // Realtime: driver record (status synced from admin or other sources)
+  useEffect(() => {
+    if (!driverRecord) return;
+
+    const channel = supabase
+      .channel('driver-self')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'drivers',
+          filter: `id=eq.${driverRecord.id}`,
+        },
+        (payload) => {
+          const updated = payload.new as Driver;
+          setDriverRecord(updated);
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [driverRecord?.id]);
 
   // Map order status → driver status
   const orderToDriverStatus = (orderStatus: string): string => {
