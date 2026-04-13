@@ -95,17 +95,15 @@ export default function AddDriverModal({ open, onOpenChange, onCreated, trucks, 
         // Admin can link later or the driver registers with this email
       }
 
-      const insertData: Record<string, unknown> = {
-        full_name: values.full_name,
-        phone: values.phone,
-        license_number: values.license_number || null,
-        assigned_truck_id: values.assigned_truck_id || null,
-        status: "available",
-      };
-
       const { data, error } = await supabase
         .from("drivers")
-        .insert(insertData)
+        .insert({
+          full_name: values.full_name,
+          phone: values.phone,
+          license_number: values.license_number || null,
+          assigned_truck_id: values.assigned_truck_id || null,
+          status: "available",
+        })
         .select()
         .single();
 
