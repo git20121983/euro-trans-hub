@@ -128,3 +128,31 @@
     @apply relative inline-block after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-secondary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left;
   }
 }
+
+/* Kanban scrollbars */
+.kanban-scroll::-webkit-scrollbar,
+.kanban-column-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.kanban-scroll::-webkit-scrollbar-track,
+.kanban-column-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.kanban-scroll::-webkit-scrollbar-thumb,
+.kanban-column-scroll::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.25);
+  border-radius: 3px;
+}
+.kanban-scroll::-webkit-scrollbar-thumb:hover,
+.kanban-column-scroll::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.4);
+}
+.kanban-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.25) transparent;
+}
+.kanban-column-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.25) transparent;
+}
