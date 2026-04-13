@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Phone, Truck } from "lucide-react";
+import { Users, Phone, Truck, Plus } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
 import type { Tables } from "@/integrations/supabase/types";
+import AddDriverModal from "@/components/admin/AddDriverModal";
 
 type Driver = Tables<"drivers">;
 
@@ -23,9 +25,10 @@ const statusColors: Record<string, string> = {
 export default function AdminDrivers() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [trucks, setTrucks] = useState<Tables<"trucks">[]>([]);
+  const [showAdd, setShowAdd] = useState(false);
   const isMobile = useIsMobile();
 
-  useEffect(() => {
+  const loadData = useCallback(() => {
     Promise.all([
       supabase.from("drivers").select("*").order("full_name"),
       supabase.from("trucks").select("*"),
@@ -35,18 +38,35 @@ export default function AdminDrivers() {
     });
   }, []);
 
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
   const getTruck = (truckId: string | null) =>
     trucks.find((t) => t.id === truckId);
 
   return (
     <div className="space-y-6 max-w-[100vw] overflow-hidden">
-      <h1 className="font-display text-2xl font-bold flex items-center gap-2">
-        <Users className="w-6 h-6 text-secondary" /> Водії
-      </h1>
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <h1 className="font-display text-2xl font-bold flex items-center gap-2">
+          <Users className="w-6 h-6 text-secondary" /> Водії
+        </h1>
+        <Button onClick={() => setShowAdd(true)} size={isMobile ? "sm" : "default"}>
+          <Plus className="w-4 h-4 mr-1" /> Додати водія
+        </Button>
+      </div>
+
+      <AddDriverModal
+        open={showAdd}
+        onOpenChange={setShowAdd}
+        onCreated={loadData}
+        trucks={trucks}
+        existingDrivers={drivers}
+      />
 
       {drivers.length === 0 ? (
         <div className="rounded-xl border border-border bg-card p-12 text-center text-muted-foreground">
-          Водіїв не знайдено. Додайте через базу даних.
+          Водіїв не знайдено. Натисніть «Додати водія» щоб створити першого.
         </div>
       ) : isMobile ? (
         <div className="space-y-3">
