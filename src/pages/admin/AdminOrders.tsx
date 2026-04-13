@@ -124,10 +124,12 @@ export default function AdminOrders() {
           <div
             ref={provided.innerRef}
             {...provided.draggableProps}
-            className={`rounded-lg border border-border bg-card p-3 space-y-2 cursor-pointer shadow-sm transition-all ${
+            className={`rounded-lg border-2 bg-card p-3 space-y-2 cursor-pointer shadow-sm transition-all ${
               snapshot.isDragging
                 ? "shadow-lg shadow-secondary/20 border-secondary/50 scale-[1.02]"
-                : "hover:border-muted-foreground/30 hover:shadow-md"
+                : selectedOrder?.id === order.id
+                  ? "border-secondary shadow-md shadow-secondary/10"
+                  : "border-border hover:border-muted-foreground/30 hover:shadow-md"
             }`}
             onClick={() => {
               setSelectedOrder(order);
@@ -182,8 +184,8 @@ export default function AdminOrders() {
   const renderColumn = (col: typeof KANBAN_COLUMNS[number], className?: string) => {
     const colOrders = getOrdersByStatus(col.id);
     return (
-      <div key={col.id} className={className ?? "flex-shrink-0 w-[310px]"}>
-        <div className="flex items-center gap-2 mb-3 px-2 py-1.5 rounded-lg bg-card border border-border">
+      <div key={col.id} className={className ?? "flex-shrink-0 min-w-[320px] w-[320px] flex flex-col max-h-full"}>
+        <div className="flex items-center gap-2 mb-3 px-2 py-1.5 rounded-lg bg-card border border-border flex-shrink-0">
           <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${col.dotColor}`} />
           <span className="font-display font-semibold text-sm text-foreground truncate">{col.label}</span>
           <span className="ml-auto flex-shrink-0 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
@@ -195,7 +197,7 @@ export default function AdminOrders() {
             <div
               ref={provided.innerRef}
               {...provided.droppableProps}
-              className={`min-h-[200px] rounded-xl border border-border p-2 space-y-2 transition-colors ${
+              className={`min-h-[200px] flex-1 overflow-y-auto rounded-xl border border-border p-2 space-y-2 transition-colors kanban-column-scroll ${
                 snapshot.isDraggingOver ? "bg-secondary/10 border-secondary/40" : "bg-card"
               }`}
             >
@@ -209,7 +211,7 @@ export default function AdminOrders() {
   };
 
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className="flex flex-col h-full min-h-0 overflow-hidden">
       {/* Sticky header */}
       <div className="flex items-center justify-between pb-3 flex-shrink-0">
         <h1 className="font-display text-xl sm:text-2xl font-bold flex items-center gap-2">
@@ -259,7 +261,7 @@ export default function AdminOrders() {
           </div>
         ) : (
           /* Desktop: horizontal scroll kanban */
-          <div className="flex gap-3 overflow-x-auto pb-4 rounded-xl bg-muted/30 p-3 flex-1 min-h-0">
+          <div className="flex gap-3 overflow-x-auto pb-4 pr-4 rounded-xl bg-muted/30 p-3 flex-1 min-h-0 kanban-scroll">
             {KANBAN_COLUMNS.map((col) => renderColumn(col))}
           </div>
         )}
