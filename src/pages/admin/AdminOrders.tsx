@@ -5,6 +5,7 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-p
 import type { Tables } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import OrderDetailPanel from "@/components/admin/OrderDetailPanel";
+import OrderCard from "@/components/admin/OrderCard";
 import CreateOrderModal from "@/components/admin/CreateOrderModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
