@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Package, Plus } from "lucide-react";
-import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
+import { DragDropContext, Droppable, type DropResult } from "@hello-pangea/dnd";
 import type { Tables } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import OrderDetailPanel from "@/components/admin/OrderDetailPanel";
