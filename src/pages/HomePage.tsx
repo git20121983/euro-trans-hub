@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Truck, Globe, Shield, Clock, ArrowRight, MapPin, Package, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
 import AnimatedSection from "@/components/AnimatedSection";
-import heroImage from "@/assets/hero-logistics.jpg";
+import heroImage from "@/assets/hero-trucks-sunset.jpg";
 
 const stats = [
   { value: "2 000 000+", label: "Кілометрів подолано", icon: MapPin },
@@ -40,28 +40,37 @@ export default function HomePage() {
     <div>
       {/* Hero */}
       <section className="relative min-h-screen flex items-center overflow-hidden">
+        {/* Background image */}
         <div className="absolute inset-0">
-          <img src={heroImage} alt="Логістичний автопарк" className="w-full h-full object-cover" width={1920} height={1080} />
-          <div className="absolute inset-0 hero-gradient opacity-85" />
+          <img
+            src={heroImage}
+            alt="Вантажівки Euro Trans Logistics на гірській дорозі під час заходу сонця"
+            className="w-full h-full object-cover"
+            width={1920}
+            height={1080}
+          />
+          {/* Cinematic dark overlay for legibility */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent" />
         </div>
 
-        <div className="relative z-10 container-custom px-4 sm:px-6 lg:px-8 pt-20">
+        <div className="relative z-10 w-full container-custom px-4 sm:px-6 lg:px-8 pt-28 pb-16">
           <div className="max-w-3xl">
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <span className="inline-block px-4 py-1.5 rounded-full text-sm font-medium accent-gradient text-secondary-foreground mb-6">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium accent-gradient text-secondary-foreground mb-6 shadow-lg">
                 🚛 Надійний партнер у логістиці
               </span>
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-7xl font-bold leading-tight mb-6 text-primary-foreground">
+              <h1 className="font-display text-4xl sm:text-5xl lg:text-7xl font-bold leading-[1.05] mb-6 text-white drop-shadow-lg">
                 Доставляємо{" "}
                 <span className="text-gradient">впевненість</span>
                 {" "}у кожному рейсі
               </h1>
-              <p className="text-lg sm:text-xl text-primary-foreground/70 mb-8 max-w-xl">
-                Euro Trans Logistics — ваш надійний логістичний партнер з м. Первомайськ. 
+              <p className="text-lg sm:text-xl text-white/85 mb-8 max-w-xl leading-relaxed">
+                Euro Trans Logistics — ваш надійний логістичний партнер з м. Первомайськ.
                 Перевезення по Україні та Європі.
               </p>
             </motion.div>
@@ -73,32 +82,41 @@ export default function HomePage() {
               className="flex flex-col sm:flex-row gap-4"
             >
               <Link to="/calculator">
-                <Button size="lg" className="accent-gradient text-secondary-foreground font-semibold text-base px-8 animate-pulse-glow border-0">
+                <Button
+                  size="lg"
+                  className="accent-gradient text-secondary-foreground font-semibold text-base px-8 rounded-full shadow-xl shadow-secondary/30 hover:shadow-secondary/50 hover:scale-[1.02] transition-all border-0"
+                >
                   Розрахувати вартість <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
               <Link to="/services">
-                <Button size="lg" variant="outline" className="border-primary-foreground/30 text-primary-foreground bg-primary-foreground/10 hover:bg-primary-foreground/20">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="rounded-full border-white/40 bg-white/10 text-white backdrop-blur-md hover:bg-white/20 hover:text-white"
+                >
                   Наші послуги
                 </Button>
               </Link>
             </motion.div>
           </div>
-        </div>
-      </section>
 
-      {/* Stats */}
-      <section className="relative -mt-20 z-20 container-custom px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((stat, i) => (
-            <AnimatedSection key={stat.label} delay={i * 0.1}>
-              <div className="elevated-card rounded-xl p-6 text-center">
-                <stat.icon className="w-8 h-8 text-secondary mx-auto mb-3" />
-                <div className="font-display text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</div>
-                <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
-              </div>
-            </AnimatedSection>
-          ))}
+          {/* Glassmorphism stats inside hero */}
+          <div className="mt-16 sm:mt-20 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {stats.map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.6 + i * 0.1 }}
+                className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-4 sm:p-6 text-center hover:bg-white/15 hover:border-white/30 transition-colors shadow-xl"
+              >
+                <stat.icon className="w-6 h-6 sm:w-7 sm:h-7 text-secondary mx-auto mb-2 sm:mb-3" strokeWidth={1.5} />
+                <div className="font-display text-xl sm:text-2xl lg:text-3xl font-bold text-white">{stat.value}</div>
+                <div className="text-xs sm:text-sm text-white/70 mt-1">{stat.label}</div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
