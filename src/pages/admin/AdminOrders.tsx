@@ -192,6 +192,28 @@ export default function AdminOrders() {
         </div>
       </div>
 
+      {/* Status nav bar (desktop only) */}
+      {!isMobile && (
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-1 flex-shrink-0 kanban-scroll">
+          {KANBAN_COLUMNS.map((col) => {
+            const count = getOrdersByStatus(col.id).length;
+            return (
+              <button
+                key={col.id}
+                onClick={() => scrollToColumn(col.id)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex-shrink-0 bg-card border border-border text-foreground hover:border-secondary/60 hover:bg-secondary/5 transition-colors"
+              >
+                <div className={`w-2 h-2 rounded-full ${col.dotColor}`} />
+                {col.label}
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-muted text-muted-foreground">
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       <DragDropContext onDragEnd={onDragEnd}>
         {isMobile ? (
           /* Mobile: Tab bar + single column */
@@ -228,7 +250,7 @@ export default function AdminOrders() {
           </div>
         ) : (
           /* Desktop: horizontal scroll kanban */
-          <div className="flex gap-3 overflow-x-auto pb-4 pr-4 rounded-xl bg-muted/30 p-3 flex-1 min-h-0 kanban-scroll">
+          <div ref={boardRef} className="flex gap-3 overflow-x-auto pb-4 pr-4 rounded-xl bg-muted/30 p-3 flex-1 min-h-0 kanban-scroll scroll-smooth">
             {KANBAN_COLUMNS.map((col) => renderColumn(col))}
           </div>
         )}
