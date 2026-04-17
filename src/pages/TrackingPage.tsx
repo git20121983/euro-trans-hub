@@ -50,7 +50,7 @@ export default function TrackingPage() {
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex-1">
                   <Label htmlFor="ttn" className="sr-only">Номер ТТН</Label>
                   <Input
@@ -58,9 +58,10 @@ export default function TrackingPage() {
                     placeholder="Наприклад: ETL-2026-001234"
                     value={ttn}
                     onChange={(e) => { setTtn(e.target.value); setTracking(false); }}
+                    className="neon-input h-12 text-base font-mono tracking-wider"
                   />
                 </div>
-                <Button onClick={handleTrack} className="accent-gradient text-secondary-foreground border-0">
+                <Button onClick={handleTrack} size="lg" className="accent-gradient text-secondary-foreground border-0 shadow-lg shadow-secondary/30">
                   <Search className="w-4 h-4 mr-2" /> Знайти
                 </Button>
               </div>

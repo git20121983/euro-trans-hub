@@ -49,11 +49,11 @@ export default function ServicesPage() {
           <div className="grid md:grid-cols-2 gap-8">
             {services.map((s, i) => (
               <AnimatedSection key={s.title} delay={i * 0.1}>
-                <div className="elevated-card rounded-xl p-8 h-full flex flex-col hover:scale-[1.01] transition-transform duration-300">
-                  <div className="w-14 h-14 rounded-xl accent-gradient flex items-center justify-center mb-5">
+                <div className="glass-card rounded-2xl p-8 h-full flex flex-col hover:border-secondary/40 hover:bg-white/[0.07] transition-all duration-300 group">
+                  <div className="w-14 h-14 rounded-xl accent-gradient flex items-center justify-center mb-5 shadow-lg shadow-secondary/20 group-hover:scale-105 transition-transform">
                     <s.icon className="w-7 h-7 text-secondary-foreground" />
                   </div>
-                  <h3 className="font-display text-xl font-bold mb-3">{s.title}</h3>
+                  <h3 className="font-display text-xl font-bold mb-3 text-foreground">{s.title}</h3>
                   <p className="text-muted-foreground mb-5 flex-1">{s.description}</p>
                   <ul className="grid grid-cols-2 gap-2 mb-6">
                     {s.features.map((f) => (
@@ -64,7 +64,7 @@ export default function ServicesPage() {
                     ))}
                   </ul>
                   <Link to="/calculator">
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full border-white/20 bg-white/5 hover:bg-white/10 hover:border-secondary/50">
                       Розрахувати вартість <ArrowRight className="ml-2 w-4 h-4" />
                     </Button>
                   </Link>

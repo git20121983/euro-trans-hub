@@ -19,21 +19,19 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="dark">
-      <SidebarProvider>
-        <div className="h-screen flex w-full bg-background text-foreground overflow-hidden">
-          <AdminSidebar />
-          <div className="flex-1 min-w-0 flex flex-col h-screen overflow-hidden">
-            <header className="h-14 flex items-center border-b border-border px-4 bg-card flex-shrink-0">
-              <SidebarTrigger className="mr-4" />
-              <h2 className="font-display font-semibold text-sm text-foreground">CRM Панель</h2>
-            </header>
-            <main className="flex-1 min-h-0 p-2 sm:p-4 md:p-6 overflow-hidden bg-background">
-              <Outlet />
-            </main>
-          </div>
+    <SidebarProvider>
+      <div className="h-screen flex w-full bg-background text-foreground overflow-hidden">
+        <AdminSidebar />
+        <div className="flex-1 min-w-0 flex flex-col h-screen overflow-hidden">
+          <header className="h-14 flex items-center border-b border-white/10 px-4 bg-background/60 backdrop-blur-xl flex-shrink-0">
+            <SidebarTrigger className="mr-4" />
+            <h2 className="font-display font-semibold text-sm text-foreground">CRM Панель</h2>
+          </header>
+          <main className="flex-1 min-h-0 p-2 sm:p-4 md:p-6 overflow-hidden">
+            <Outlet />
+          </main>
         </div>
-      </SidebarProvider>
-    </div>
+      </div>
+    </SidebarProvider>
   );
 }
