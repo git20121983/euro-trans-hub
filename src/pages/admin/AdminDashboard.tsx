@@ -58,36 +58,38 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-2xl font-bold">Dashboard</h1>
+      <h1 className="font-display text-2xl font-bold text-foreground">Dashboard</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map((card) => (
-          <div key={card.label} className="rounded-xl border border-border bg-card p-5">
+          <div key={card.label} className="glass-card rounded-xl p-5 hover:border-secondary/30 transition-colors">
             <card.icon className={`w-6 h-6 ${card.color} mb-3`} />
-            <div className="font-display text-2xl font-bold">{card.value}</div>
+            <div className="font-display text-2xl font-bold text-foreground">{card.value}</div>
             <p className="text-xs text-muted-foreground mt-1">{card.label}</p>
           </div>
         ))}
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-6">
+      <div className="glass-card rounded-xl p-6">
         <div className="flex items-center gap-2 mb-4">
           <TrendingUp className="w-5 h-5 text-secondary" />
-          <h3 className="font-display font-bold">Завантаженість за місяцями</h3>
+          <h3 className="font-display font-bold text-foreground">Завантаженість за місяцями</h3>
         </div>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={mockChartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(215 25% 20%)" />
-              <XAxis dataKey="month" stroke="hsl(215 15% 55%)" fontSize={12} />
-              <YAxis stroke="hsl(215 15% 55%)" fontSize={12} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 100% / 0.08)" />
+              <XAxis dataKey="month" stroke="hsl(0 0% 100% / 0.6)" fontSize={12} />
+              <YAxis stroke="hsl(0 0% 100% / 0.6)" fontSize={12} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "hsl(215 30% 12%)",
-                  border: "1px solid hsl(215 25% 20%)",
+                  backgroundColor: "hsl(222 47% 8% / 0.95)",
+                  border: "1px solid hsl(0 0% 100% / 0.15)",
                   borderRadius: "8px",
-                  color: "hsl(210 20% 95%)",
+                  color: "hsl(210 40% 98%)",
+                  backdropFilter: "blur(12px)",
                 }}
+                cursor={{ fill: "hsl(30 95% 55% / 0.1)" }}
               />
               <Bar dataKey="trips" fill="hsl(30 95% 55%)" radius={[4, 4, 0, 0]} />
             </BarChart>

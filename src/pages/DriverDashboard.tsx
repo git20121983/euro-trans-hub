@@ -409,21 +409,21 @@ export default function DriverDashboard() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
+      <div className="bg-background/70 backdrop-blur-xl border-b border-white/10 px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between max-w-lg mx-auto">
           <div>
-            <h1 className="font-bold text-lg">🚛 Euro Trans</h1>
+            <h1 className="font-bold text-lg text-foreground">🚛 Euro Trans</h1>
             <p className="text-xs text-muted-foreground">{driverRecord.full_name}</p>
           </div>
           <div className="text-right">
-            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+            <span className={`text-xs px-2.5 py-1 rounded-full font-medium backdrop-blur-md border ${
               driverRecord.status === "available"
-                ? "bg-green-500/20 text-green-400"
+                ? "bg-green-500/15 text-green-300 border-green-500/30"
                 : driverRecord.status === "in_transit"
-                ? "bg-blue-500/20 text-blue-400"
+                ? "bg-blue-500/15 text-blue-300 border-blue-500/30"
                 : driverRecord.status === "customs"
-                ? "bg-violet-500/20 text-violet-400"
-                : "bg-muted text-muted-foreground"
+                ? "bg-violet-500/15 text-violet-300 border-violet-500/30"
+                : "bg-white/5 text-muted-foreground border-white/10"
             }`}>
               {DRIVER_STATUSES.find(s => s.id === driverRecord.status)?.label ?? "Вільний"}
             </span>
@@ -442,7 +442,7 @@ export default function DriverDashboard() {
         />
 
         {/* Driver Status Buttons */}
-        <div className="rounded-xl border border-border bg-card p-4">
+        <div className="glass-card rounded-xl p-4">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
             Ваш статус
           </p>
@@ -457,8 +457,8 @@ export default function DriverDashboard() {
                   disabled={updatingStatus}
                   className={`h-16 text-sm font-medium transition-all ${
                     isActive
-                      ? `${status.color} ring-2 ${status.activeRing} ring-offset-2 ring-offset-background scale-[1.02]`
-                      : "bg-muted/50 hover:bg-muted text-foreground"
+                      ? `${status.color} ring-2 ${status.activeRing} ring-offset-2 ring-offset-background scale-[1.02] shadow-lg`
+                      : "bg-white/[0.04] hover:bg-white/[0.08] text-foreground border border-white/10 backdrop-blur-md"
                   }`}
                   variant={isActive ? "default" : "outline"}
                 >
