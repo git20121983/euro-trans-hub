@@ -34,7 +34,7 @@ export function AdminSidebar() {
     path === "/admin" ? location.pathname === "/admin" : location.pathname.startsWith(path);
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border">
+    <Sidebar collapsible="icon" className="border-r border-white/10 bg-background/40 backdrop-blur-xl">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/60">

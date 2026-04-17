@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calculator, ArrowRight, Fuel, Info, MapPin, Route } from "lucide-react";
 import AnimatedSection from "@/components/AnimatedSection";
 import { searchCities, calculateDistance, type City } from "@/lib/cities";
+import calcMapBg from "@/assets/calc-map-bg.jpg";
 
 const FUEL_CONSUMPTION = 33;
 const OVERHEAD_RATE = 1.15;
@@ -154,10 +155,24 @@ export default function CalculatorPage() {
         </div>
       </section>
 
-      <section className="section-padding">
+      <section className="relative section-padding overflow-hidden">
+        {/* Blurred map road background */}
+        <div className="absolute inset-0 -z-10">
+          <img
+            src={calcMapBg}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            width={1920}
+            height={1080}
+            className="w-full h-full object-cover opacity-30 blur-md scale-110"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
+        </div>
+
         <div className="container-custom max-w-2xl">
           <AnimatedSection>
-            <div className="elevated-card rounded-2xl p-8">
+            <div className="glass-card-strong rounded-2xl p-8">
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-12 h-12 rounded-xl accent-gradient flex items-center justify-center">
                   <Calculator className="w-6 h-6 text-secondary-foreground" />
@@ -250,7 +265,7 @@ export default function CalculatorPage() {
                 </Button>
 
                 {result !== null && (
-                  <div className="mt-6 p-6 rounded-xl bg-muted text-center">
+                  <div className="mt-6 p-6 rounded-xl bg-secondary/10 border border-secondary/30 text-center">
                     <p className="text-sm text-muted-foreground mb-2">Орієнтовна вартість перевезення:</p>
                     <p className="font-display text-4xl font-bold text-foreground">
                       {result.toLocaleString("uk-UA")} <span className="text-secondary">₴</span>
