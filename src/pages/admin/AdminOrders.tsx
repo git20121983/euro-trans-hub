@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Package, Plus } from "lucide-react";
 import { DragDropContext, Droppable, type DropResult } from "@hello-pangea/dnd";
@@ -42,6 +42,15 @@ export default function AdminOrders() {
   const [createOpen, setCreateOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
   const isMobile = useIsMobile();
+  const boardRef = useRef<HTMLDivElement>(null);
+  const columnRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const scrollToColumn = useCallback((colId: string) => {
+    const el = columnRefs.current[colId];
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+    }
+  }, []);
 
   const fetchData = useCallback(async () => {
     const [ordersRes, driversRes, trucksRes] = await Promise.all([
@@ -138,7 +147,11 @@ export default function AdminOrders() {
   const renderColumn = (col: typeof KANBAN_COLUMNS[number], className?: string) => {
     const colOrders = getOrdersByStatus(col.id);
     return (
-      <div key={col.id} className={className ?? "flex-shrink-0 min-w-[320px] w-[320px] flex flex-col max-h-full"}>
+      <div
+        key={col.id}
+        ref={(el) => { columnRefs.current[col.id] = el; }}
+        className={className ?? "flex-shrink-0 min-w-[280px] w-[280px] flex flex-col max-h-full scroll-ml-3"}
+      >
         <div className="flex items-center gap-2 mb-3 px-2 py-1.5 rounded-lg bg-card border border-border flex-shrink-0">
           <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${col.dotColor}`} />
           <span className="font-display font-semibold text-sm text-foreground truncate">{col.label}</span>
@@ -179,6 +192,28 @@ export default function AdminOrders() {
         </div>
       </div>
 
+      {/* Status nav bar (desktop only) */}
+      {!isMobile && (
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-1 flex-shrink-0 kanban-scroll">
+          {KANBAN_COLUMNS.map((col) => {
+            const count = getOrdersByStatus(col.id).length;
+            return (
+              <button
+                key={col.id}
+                onClick={() => scrollToColumn(col.id)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex-shrink-0 bg-card border border-border text-foreground hover:border-secondary/60 hover:bg-secondary/5 transition-colors"
+              >
+                <div className={`w-2 h-2 rounded-full ${col.dotColor}`} />
+                {col.label}
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-muted text-muted-foreground">
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       <DragDropContext onDragEnd={onDragEnd}>
         {isMobile ? (
           /* Mobile: Tab bar + single column */
@@ -215,7 +250,7 @@ export default function AdminOrders() {
           </div>
         ) : (
           /* Desktop: horizontal scroll kanban */
-          <div className="flex gap-3 overflow-x-auto pb-4 pr-4 rounded-xl bg-muted/30 p-3 flex-1 min-h-0 kanban-scroll">
+          <div ref={boardRef} className="flex gap-3 overflow-x-auto pb-4 pr-4 rounded-xl bg-muted/30 p-3 flex-1 min-h-0 kanban-scroll scroll-smooth">
             {KANBAN_COLUMNS.map((col) => renderColumn(col))}
           </div>
         )}
