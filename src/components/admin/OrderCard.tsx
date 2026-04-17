@@ -56,12 +56,12 @@ export default function OrderCard({ order, index, isSelected, driverName, truckP
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
-          className={`group rounded-xl border-2 bg-card p-3 space-y-2.5 cursor-pointer transition-all duration-150 ${
+          className={`group rounded-xl border bg-card p-2.5 space-y-2 cursor-pointer transition-all duration-150 ${
             snapshot.isDragging
               ? "shadow-xl shadow-secondary/20 border-secondary/60 scale-[1.02] rotate-1"
               : isSelected
-                ? "border-secondary shadow-lg shadow-secondary/10"
-                : "border-border/60 hover:border-muted-foreground/40 hover:shadow-md hover:bg-card/90"
+                ? "border-secondary shadow-md shadow-secondary/10"
+                : "border-border/60 hover:border-muted-foreground/40 hover:shadow-sm hover:bg-card/90"
           }`}
           onClick={onClick}
         >
