@@ -152,24 +152,28 @@ export default function HomePage() {
       <AnimatedSection>
         <section className="section-padding">
           <div className="container-custom">
-            <div className="hero-gradient rounded-2xl p-8 sm:p-12 lg:p-16 text-center">
-              <h2 className="font-display text-3xl sm:text-4xl font-bold text-primary-foreground mb-4">
-                Готові до відправки?
-              </h2>
-              <p className="text-primary-foreground/70 mb-8 max-w-lg mx-auto">
-                Розрахуйте вартість доставки онлайн або зв'яжіться з нами для індивідуальної пропозиції.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/calculator">
-                  <Button size="lg" className="accent-gradient text-secondary-foreground font-semibold border-0">
-                    Калькулятор вартості
-                  </Button>
-                </Link>
-                <Link to="/contacts">
-                  <Button size="lg" variant="outline" className="border-primary-foreground/30 text-primary-foreground bg-primary-foreground/10 hover:bg-primary-foreground/20">
-                    Зв'язатися з нами
-                  </Button>
-                </Link>
+            <div className="relative overflow-hidden glass-card-strong rounded-2xl p-8 sm:p-12 lg:p-16 text-center">
+              <div className="absolute inset-0 -z-10 opacity-60 pointer-events-none"
+                   style={{ background: "radial-gradient(ellipse at center, hsl(30 95% 55% / 0.15), transparent 70%)" }} />
+              <div className="relative z-10">
+                <h2 className="font-display text-3xl sm:text-4xl font-bold text-white mb-4">
+                  Готові до відправки?
+                </h2>
+                <p className="text-slate-100 mb-8 max-w-lg mx-auto">
+                  Розрахуйте вартість доставки онлайн або зв'яжіться з нами для індивідуальної пропозиції.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link to="/calculator">
+                    <Button size="lg" className="accent-gradient text-secondary-foreground font-semibold border-0">
+                      Калькулятор вартості
+                    </Button>
+                  </Link>
+                  <Link to="/contacts">
+                    <Button size="lg" variant="outline" className="border-white/30 text-white bg-white/10 hover:bg-white/20 hover:text-white">
+                      Зв'язатися з нами
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
