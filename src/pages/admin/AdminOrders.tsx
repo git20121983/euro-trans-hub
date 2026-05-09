@@ -41,16 +41,10 @@ export default function AdminOrders() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+  const [activeFilter, setActiveFilter] = useState<string>("all");
   const isMobile = useIsMobile();
   const boardRef = useRef<HTMLDivElement>(null);
   const columnRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-  const scrollToColumn = useCallback((colId: string) => {
-    const el = columnRefs.current[colId];
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
-    }
-  }, []);
 
   const fetchData = useCallback(async () => {
     const [ordersRes, driversRes, trucksRes] = await Promise.all([
