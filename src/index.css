@@ -176,3 +176,6 @@
   scrollbar-width: thin;
   scrollbar-color: hsl(30 95% 55% / 0.3) transparent;
 }
+
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
