@@ -201,7 +201,7 @@ export default function AdminOrders() {
               <button
                 key={col.id}
                 onClick={() => scrollToColumn(col.id)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex-shrink-0 bg-card border border-border text-foreground hover:border-secondary/60 hover:bg-secondary/5 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 bg-white/[0.04] backdrop-blur-md border border-white/10 text-foreground hover:border-secondary/60 hover:bg-secondary/10 transition-all"
               >
                 <div className={`w-2 h-2 rounded-full ${col.dotColor}`} />
                 {col.label}
