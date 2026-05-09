@@ -150,7 +150,7 @@ export default function AdminOrders() {
       <div
         key={col.id}
         ref={(el) => { columnRefs.current[col.id] = el; }}
-        className={className ?? "flex-shrink-0 min-w-[280px] w-[280px] flex flex-col max-h-full scroll-ml-3"}
+        className={className ?? "flex-shrink-0 min-w-[320px] w-[320px] flex flex-col max-h-full scroll-ml-3"}
       >
         <div className="flex items-center gap-2 mb-3 px-2 py-1.5 rounded-lg bg-card border border-border flex-shrink-0">
           <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${col.dotColor}`} />
@@ -178,7 +178,7 @@ export default function AdminOrders() {
   };
 
   return (
-    <div className="flex flex-col h-full min-h-0 overflow-hidden">
+    <div className="flex flex-col h-full w-full min-h-0 min-w-0 overflow-hidden">
       {/* Sticky header */}
       <div className="flex items-center justify-between pb-3 flex-shrink-0">
         <h1 className="font-display text-xl sm:text-2xl font-bold flex items-center gap-2">
@@ -250,7 +250,7 @@ export default function AdminOrders() {
           </div>
         ) : (
           /* Desktop: horizontal scroll kanban */
-          <div ref={boardRef} className="flex gap-3 overflow-x-auto pb-4 pr-4 rounded-xl bg-muted/30 p-3 flex-1 min-h-0 kanban-scroll scroll-smooth">
+          <div ref={boardRef} className="flex gap-3 overflow-x-auto overflow-y-hidden pb-4 rounded-xl bg-muted/30 p-3 flex-1 min-h-0 min-w-0 w-full kanban-scroll scroll-smooth">
             {KANBAN_COLUMNS.map((col) => renderColumn(col))}
           </div>
         )}
