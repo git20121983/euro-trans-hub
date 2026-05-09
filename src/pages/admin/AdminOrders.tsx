@@ -225,10 +225,10 @@ export default function AdminOrders() {
                   <button
                     key={col.id}
                     onClick={() => setActiveTab(i)}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap flex-shrink-0 transition-colors ${
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 transition-colors ${
                       activeTab === i
-                        ? "bg-secondary text-secondary-foreground"
-                        : "bg-card border border-border text-muted-foreground"
+                        ? "bg-secondary text-secondary-foreground shadow-md"
+                        : "bg-white/[0.04] backdrop-blur-md border border-white/10 text-muted-foreground"
                     }`}
                   >
                     <div className={`w-2 h-2 rounded-full ${col.dotColor}`} />
