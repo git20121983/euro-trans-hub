@@ -186,20 +186,38 @@ export default function AdminOrders() {
         </div>
       </div>
 
-      {/* Status nav bar (desktop only) */}
+      {/* Status filter bar (desktop only) */}
       {!isMobile && (
         <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-1 flex-shrink-0 kanban-scroll">
+          <button
+            onClick={() => setActiveFilter("all")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 transition-all ${
+              activeFilter === "all"
+                ? "bg-secondary text-secondary-foreground shadow-md shadow-secondary/30 border border-secondary"
+                : "bg-white/[0.04] backdrop-blur-md border border-white/10 text-foreground hover:border-secondary/60 hover:bg-secondary/10"
+            }`}
+          >
+            Всі
+            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeFilter === "all" ? "bg-secondary-foreground/20" : "bg-muted text-muted-foreground"}`}>
+              {orders.length}
+            </span>
+          </button>
           {KANBAN_COLUMNS.map((col) => {
             const count = getOrdersByStatus(col.id).length;
+            const isActive = activeFilter === col.id;
             return (
               <button
                 key={col.id}
-                onClick={() => scrollToColumn(col.id)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 bg-white/[0.04] backdrop-blur-md border border-white/10 text-foreground hover:border-secondary/60 hover:bg-secondary/10 transition-all"
+                onClick={() => setActiveFilter(col.id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 transition-all ${
+                  isActive
+                    ? "bg-secondary text-secondary-foreground shadow-md shadow-secondary/30 border border-secondary"
+                    : "bg-white/[0.04] backdrop-blur-md border border-white/10 text-foreground hover:border-secondary/60 hover:bg-secondary/10"
+                }`}
               >
                 <div className={`w-2 h-2 rounded-full ${col.dotColor}`} />
                 {col.label}
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-muted text-muted-foreground">
+                <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${isActive ? "bg-secondary-foreground/20" : "bg-muted text-muted-foreground"}`}>
                   {count}
                 </span>
               </button>
@@ -238,14 +256,22 @@ export default function AdminOrders() {
                 );
               })}
             </div>
-            <div className="flex-1 min-h-0 overflow-y-auto pt-1">
-              {renderColumn(KANBAN_COLUMNS[activeTab], "w-full")}
+            <div key={activeTab} className="flex-1 min-h-0 overflow-hidden pt-1 animate-fade-in">
+              {renderColumn(KANBAN_COLUMNS[activeTab], "w-full h-full flex flex-col min-h-0")}
             </div>
           </div>
-        ) : (
-          /* Desktop: horizontal scroll kanban */
-          <div ref={boardRef} className="flex gap-3 overflow-x-auto overflow-y-hidden pb-4 rounded-xl bg-muted/30 p-3 flex-1 min-h-0 min-w-0 w-full kanban-scroll scroll-smooth">
+        ) : activeFilter === "all" ? (
+          <div key="all" ref={boardRef} className="flex gap-3 overflow-x-auto overflow-y-hidden pb-4 rounded-xl bg-muted/30 p-3 flex-1 min-h-0 min-w-0 w-full kanban-scroll scroll-smooth animate-fade-in">
             {KANBAN_COLUMNS.map((col) => renderColumn(col))}
+          </div>
+        ) : (
+          <div key={activeFilter} className="flex-1 min-h-0 min-w-0 w-full overflow-hidden rounded-xl bg-muted/30 p-3 animate-fade-in flex justify-center">
+            <div className="w-full max-w-[600px] h-full flex flex-col min-h-0">
+              {renderColumn(
+                KANBAN_COLUMNS.find((c) => c.id === activeFilter)!,
+                "w-full h-full flex flex-col min-h-0"
+              )}
+            </div>
           </div>
         )}
       </DragDropContext>
