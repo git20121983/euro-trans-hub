@@ -12,6 +12,8 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   isStaff: boolean;
+  isManager: boolean;
+  isAccountant: boolean;
   signOut: () => Promise<void>;
 }
 
