@@ -12,6 +12,8 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   isStaff: boolean;
+  isManager: boolean;
+  isAccountant: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -59,13 +61,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAdmin = roles.includes("admin");
   const isStaff = roles.includes("admin") || roles.includes("manager");
+  const isManager = roles.includes("manager");
+  const isAccountant = roles.includes("accountant");
 
   const signOut = async () => {
     await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, roles, loading, isAdmin, isStaff, signOut }}>
+    <AuthContext.Provider value={{ user, session, roles, loading, isAdmin, isStaff, isManager, isAccountant, signOut }}>
       {children}
     </AuthContext.Provider>
   );

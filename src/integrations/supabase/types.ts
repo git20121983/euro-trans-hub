@@ -61,6 +61,63 @@ export type Database = {
           },
         ]
       }
+      invoices: {
+        Row: {
+          amount: number
+          created_at: string
+          due_date: string | null
+          id: string
+          invoice_number: string
+          issued_at: string
+          notes: string | null
+          order_id: string
+          status: string
+          updated_at: string
+          vat_amount: number
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          invoice_number: string
+          issued_at?: string
+          notes?: string | null
+          order_id: string
+          status?: string
+          updated_at?: string
+          vat_amount?: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          invoice_number?: string
+          issued_at?: string
+          notes?: string | null
+          order_id?: string
+          status?: string
+          updated_at?: string
+          vat_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_finance"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_events: {
         Row: {
           created_at: string
@@ -97,6 +154,13 @@ export type Database = {
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "order_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_finance"
+            referencedColumns: ["id"]
+          },
         ]
       }
       orders: {
@@ -111,20 +175,28 @@ export type Database = {
           depreciation_cost: number | null
           destination: string
           distance: number
+          driver_advance: number
           driver_id: string | null
           driver_salary: number | null
           fuel_cost: number | null
           fuel_price: number | null
           id: string
+          is_international: boolean
+          manager_id: string | null
           net_profit: number | null
           notes: string | null
           order_number: string
           origin: string
+          paid_amount: number
+          payment_status: string
           status: string
           toll_cost: number | null
+          total_amount: number | null
           total_price: number | null
           truck_id: string | null
+          unloading_date: string | null
           updated_at: string
+          vat_amount: number
         }
         Insert: {
           actual_fuel_cost?: number | null
@@ -137,20 +209,28 @@ export type Database = {
           depreciation_cost?: number | null
           destination: string
           distance: number
+          driver_advance?: number
           driver_id?: string | null
           driver_salary?: number | null
           fuel_cost?: number | null
           fuel_price?: number | null
           id?: string
+          is_international?: boolean
+          manager_id?: string | null
           net_profit?: number | null
           notes?: string | null
           order_number?: string
           origin: string
+          paid_amount?: number
+          payment_status?: string
           status?: string
           toll_cost?: number | null
+          total_amount?: number | null
           total_price?: number | null
           truck_id?: string | null
+          unloading_date?: string | null
           updated_at?: string
+          vat_amount?: number
         }
         Update: {
           actual_fuel_cost?: number | null
@@ -163,20 +243,28 @@ export type Database = {
           depreciation_cost?: number | null
           destination?: string
           distance?: number
+          driver_advance?: number
           driver_id?: string | null
           driver_salary?: number | null
           fuel_cost?: number | null
           fuel_price?: number | null
           id?: string
+          is_international?: boolean
+          manager_id?: string | null
           net_profit?: number | null
           notes?: string | null
           order_number?: string
           origin?: string
+          paid_amount?: number
+          payment_status?: string
           status?: string
           toll_cost?: number | null
+          total_amount?: number | null
           total_price?: number | null
           truck_id?: string | null
+          unloading_date?: string | null
           updated_at?: string
+          vat_amount?: number
         }
         Relationships: [
           {
@@ -191,6 +279,61 @@ export type Database = {
             columns: ["truck_id"]
             isOneToOne: false
             referencedRelation: "trucks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          invoice_id: string | null
+          method: string
+          notes: string | null
+          order_id: string
+          paid_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          method?: string
+          notes?: string | null
+          order_id: string
+          paid_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          method?: string
+          notes?: string | null
+          order_id?: string
+          paid_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_finance"
             referencedColumns: ["id"]
           },
         ]
@@ -293,7 +436,132 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      orders_finance: {
+        Row: {
+          actual_fuel_cost: number | null
+          cargo_type: string | null
+          cargo_weight: number | null
+          client_name: string | null
+          client_phone: string | null
+          client_user_id: string | null
+          created_at: string | null
+          debt: number | null
+          depreciation_cost: number | null
+          destination: string | null
+          distance: number | null
+          driver_advance: number | null
+          driver_id: string | null
+          driver_salary: number | null
+          effective_payment_status: string | null
+          fuel_cost: number | null
+          fuel_price: number | null
+          id: string | null
+          is_international: boolean | null
+          manager_id: string | null
+          net_profit: number | null
+          notes: string | null
+          order_number: string | null
+          origin: string | null
+          paid_amount: number | null
+          payment_status: string | null
+          status: string | null
+          toll_cost: number | null
+          total_amount: number | null
+          total_price: number | null
+          truck_id: string | null
+          unloading_date: string | null
+          updated_at: string | null
+          vat_amount: number | null
+        }
+        Insert: {
+          actual_fuel_cost?: number | null
+          cargo_type?: string | null
+          cargo_weight?: number | null
+          client_name?: string | null
+          client_phone?: string | null
+          client_user_id?: string | null
+          created_at?: string | null
+          debt?: never
+          depreciation_cost?: number | null
+          destination?: string | null
+          distance?: number | null
+          driver_advance?: number | null
+          driver_id?: string | null
+          driver_salary?: number | null
+          effective_payment_status?: never
+          fuel_cost?: number | null
+          fuel_price?: number | null
+          id?: string | null
+          is_international?: boolean | null
+          manager_id?: string | null
+          net_profit?: number | null
+          notes?: string | null
+          order_number?: string | null
+          origin?: string | null
+          paid_amount?: number | null
+          payment_status?: string | null
+          status?: string | null
+          toll_cost?: number | null
+          total_amount?: number | null
+          total_price?: number | null
+          truck_id?: string | null
+          unloading_date?: string | null
+          updated_at?: string | null
+          vat_amount?: number | null
+        }
+        Update: {
+          actual_fuel_cost?: number | null
+          cargo_type?: string | null
+          cargo_weight?: number | null
+          client_name?: string | null
+          client_phone?: string | null
+          client_user_id?: string | null
+          created_at?: string | null
+          debt?: never
+          depreciation_cost?: number | null
+          destination?: string | null
+          distance?: number | null
+          driver_advance?: number | null
+          driver_id?: string | null
+          driver_salary?: number | null
+          effective_payment_status?: never
+          fuel_cost?: number | null
+          fuel_price?: number | null
+          id?: string | null
+          is_international?: boolean | null
+          manager_id?: string | null
+          net_profit?: number | null
+          notes?: string | null
+          order_number?: string | null
+          origin?: string | null
+          paid_amount?: number | null
+          payment_status?: string | null
+          status?: string | null
+          toll_cost?: number | null
+          total_amount?: number | null
+          total_price?: number | null
+          truck_id?: string | null
+          unloading_date?: string | null
+          updated_at?: string | null
+          vat_amount?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_truck_id_fkey"
+            columns: ["truck_id"]
+            isOneToOne: false
+            referencedRelation: "trucks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_role: {
@@ -305,7 +573,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "manager" | "driver" | "client"
+      app_role: "admin" | "manager" | "driver" | "client" | "accountant"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -433,7 +701,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "manager", "driver", "client"],
+      app_role: ["admin", "manager", "driver", "client", "accountant"],
     },
   },
 } as const
