@@ -95,9 +95,10 @@ export default function DriverOnboarding({ driver, onUpdated }: Props) {
       return;
     }
 
+    const update: Partial<Driver> = { [key]: path };
     const { data, error } = await supabase
       .from("drivers")
-      .update({ [key]: path })
+      .update(update)
       .eq("id", driver.id)
       .select("*")
       .single();
