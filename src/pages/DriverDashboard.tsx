@@ -344,15 +344,19 @@ export default function DriverDashboard() {
   if (!driverRecord) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <div className="text-center space-y-3">
+        <div className="text-center space-y-3 max-w-sm">
           <Truck className="w-12 h-12 text-muted-foreground mx-auto" />
-          <h2 className="text-xl font-bold">Не вдалося створити профіль</h2>
+          <h2 className="text-xl font-bold">Профіль водія не знайдено</h2>
           <p className="text-sm text-muted-foreground">
-            Зверніться до адміністратора для прив'язки вашого акаунту.
+            Ваш номер телефону не співпадає з жодним записом водія. Зверніться до адміністратора, щоб він додав вас у систему.
           </p>
         </div>
       </div>
     );
+  }
+
+  if (driverRecord.status === "pending_details" || driverRecord.status === "on_verification") {
+    return <DriverOnboarding driver={driverRecord} onUpdated={setDriverRecord} />;
   }
 
   const getNextStatus = (current: string) => {
