@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
+import DriverOnboarding from "./DriverOnboarding";
 
 type Order = Tables<"orders">;
 type Driver = Tables<"drivers">;
@@ -51,54 +52,15 @@ export default function DriverDashboard() {
   const fetchDriverData = useCallback(async (userId: string) => {
     setLoading(true);
 
-    // Find existing driver record (unique constraint prevents duplicates)
-    let { data: driver } = await supabase
+    const { data: driver } = await supabase
       .from("drivers")
       .select("*")
       .eq("user_id", userId)
       .maybeSingle();
 
-    if (!driver) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("full_name, phone")
-        .eq("user_id", userId)
-        .maybeSingle();
+    setDriverRecord(driver ?? null);
 
-      const { data: newDriver, error: createError } = await supabase
-        .from("drivers")
-        .insert({
-          user_id: userId,
-          full_name: profile?.full_name ?? "Водій",
-          phone: profile?.phone ?? "",
-          status: "available",
-        })
-        .select("*")
-        .single();
-
-      if (createError) {
-        // If unique constraint violation, fetch the existing record
-        if (createError.code === "23505") {
-          const { data: existing } = await supabase
-            .from("drivers")
-            .select("*")
-            .eq("user_id", userId)
-            .single();
-          driver = existing;
-        } else {
-          console.error("Failed to create driver:", createError);
-          toast.error("Не вдалося створити профіль водія.");
-          setLoading(false);
-          return;
-        }
-      } else {
-        driver = newDriver;
-      }
-    }
-
-    setDriverRecord(driver);
-
-    if (driver) {
+    if (driver && !["pending_details", "on_verification"].includes(driver.status)) {
       const { data: driverOrders } = await supabase
         .from("orders")
         .select("*")
@@ -383,15 +345,19 @@ export default function DriverDashboard() {
   if (!driverRecord) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <div className="text-center space-y-3">
+        <div className="text-center space-y-3 max-w-sm">
           <Truck className="w-12 h-12 text-muted-foreground mx-auto" />
-          <h2 className="text-xl font-bold">Не вдалося створити профіль</h2>
+          <h2 className="text-xl font-bold">Профіль водія не знайдено</h2>
           <p className="text-sm text-muted-foreground">
-            Зверніться до адміністратора для прив'язки вашого акаунту.
+            Ваш номер телефону не співпадає з жодним записом водія. Зверніться до адміністратора, щоб він додав вас у систему.
           </p>
         </div>
       </div>
     );
+  }
+
+  if (driverRecord.status === "pending_details" || driverRecord.status === "on_verification") {
+    return <DriverOnboarding driver={driverRecord} onUpdated={setDriverRecord} />;
   }
 
   const getNextStatus = (current: string) => {

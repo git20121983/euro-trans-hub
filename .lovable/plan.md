@@ -1,57 +1,65 @@
-## План: Ролі + розширений фінансовий облік
+## План: Автоматизований онбординг водія
 
-### 1. Міграція БД
+### 1. База даних (міграція)
 
-**Ролі.** В проєкті вже є `app_role` enum (`admin`, `manager`, `driver`, `client`) і таблиця `user_roles` з функцією `has_role()`. Це правильна схема (ролі в окремій таблиці, не в `profiles` — інакше privilege escalation). Тому:
-- Додам значення `accountant` до існуючого enum `app_role` (НЕ створюю колонку `role` в `profiles` — це антипатерн, який я свідомо не виконую з міркувань безпеки; поясню в чаті).
-- Додам колонку `manager_id uuid` в `orders` (FK логічно на `auth.users`, але без жорсткого FK — за конвенцією проєкту).
+**Таблиця `drivers` — нові колонки:**
+- `birth_date` (date), `address` (text), `license_expiry` (date)
+- `license_front_url`, `license_back_url`, `selfie_url` (text)
+- `details_submitted_at`, `verified_at` (timestamptz), `verified_by` (uuid)
 
-**Фінансові поля в `orders`:**
-- `payment_status` text з CHECK (`unpaid|partially_paid|paid|overdue`), default `unpaid`
-- `total_amount numeric` (дебіторка; якщо NULL — fallback на `total_price`)
-- `paid_amount numeric default 0`
-- `driver_advance numeric default 0`
-- `is_international boolean default false`
-- `vat_amount numeric` — генерується тригером: 20% від `total_amount` якщо не міжнар., інакше 0
-- `unloading_date date` (потрібно для overdue-логіки)
+**Нові статуси водія** (текстове поле, не enum) — додаємо значення:
+- `pending_details` — створено адміном, водій ще не заповнив профіль
+- `on_verification` — водій надіслав документи, очікує перевірки адміна
+- `available` (existing) — після схвалення
 
-**View `orders_finance`:** додає `debt = total_amount - paid_amount` і обчислений `effective_payment_status` (overdue якщо `debt > 0` і `unloading_date + 14 днів < now()`).
+**Storage bucket `driver-docs`** (приватний) з RLS:
+- Водій може upload/select свої файли в папку `{driver_id}/...`
+- Admin/manager — повний read доступ
+- Структура: `{driver_id}/license_front.jpg`, `license_back.jpg`, `selfie.jpg`
 
-**Тригер:** перед INSERT/UPDATE на `orders` — перерахунок `vat_amount` і автопідняття `payment_status` до `paid` якщо `paid_amount >= total_amount`, до `partially_paid` якщо `0 < paid_amount < total_amount`. Overdue ставиться через view (бо залежить від часу).
+**RLS на drivers:**
+- Дозволити водію оновлювати власний запис (вже є) — додати поля до allowed
+- Admin/manager бачать `on_verification` для нотифікацій
 
-### 2. RLS-політики
+**Зміна `handle_new_user`:** не створювати driver автоматично (буде створювати адмін).
 
-**`orders`:**
-- Admin: повний CRUD (вже є — `Staff can manage orders`, обмежу до admin+manager як було).
-- Manager: бачить/редагує лише де `manager_id = auth.uid()`. Замінюю поточну `manager`-частину політики на per-row.
-- Accountant: SELECT-only на всі orders.
+### 2. CRM — спрощена форма додавання водія
 
-**Нові таблиці `invoices` і `payments`:**
-- `invoices`: `order_id`, `invoice_number`, `amount`, `vat_amount`, `issued_at`, `due_date`, `status`.
-- `payments`: `order_id`, `invoice_id`, `amount`, `paid_at`, `method`.
-- RLS: admin + accountant — повний CRUD; manager — SELECT тільки по своїх `orders`.
+`AddDriverModal.tsx`: залишити тільки **ПІБ, телефон, номер посвідчення**. Прибрати email і truck. Запис створюється зі статусом `pending_details`.
 
-### 3. UI: `FinanceDashboard`
+### 3. CRM — нотифікації про верифікацію
 
-Нова сторінка `/admin/finance-dashboard` (або заміна існуючого `AdminFinance` — об'єдную в один екран із трьома віджетами зверху + таблиця знизу).
+В `AdminDrivers.tsx`:
+- Бейдж "На верифікації: N" угорі сторінки
+- Realtime-підписка на `drivers` зі статусом `on_verification`
+- Toast при появі нового
+- Кнопки **Схвалити / Відхилити** в картці водія → відкриває модалку перегляду документів
+- Схвалення: статус → `available`, заповнюються `verified_at`, `verified_by`
+- Відхилення: статус → `pending_details` з нотаткою
 
-Три віджети:
-1. **Загальна дебіторка** — `SUM(total_amount - paid_amount)` де `payment_status != 'paid'`.
-2. **Активні аванси** — `SUM(driver_advance)` по замовленнях зі статусом `in_transit|unloading`.
-3. **Прогноз прибутку** — `SUM(total_amount - vat_amount - fuel_cost - driver_salary - depreciation_cost - toll_cost)` по активних/завершених.
+### 4. Driver App — покрокова анкета
 
-Фільтрація за роллю: RLS вже все відфільтрує — менеджер бачить тільки свої. На фронті лише читаю `useAuth().roles` щоб ховати віджет «Прогноз прибутку компанії» від manager (відкривається admin + accountant).
+Новий компонент `DriverOnboarding.tsx`:
+- Показується якщо `driverRecord.status === 'pending_details'` або `'on_verification'`
+- shadcn `<Progress>` зверху (33% / 66% / 100%)
+- **Крок 1:** Дата народження, адреса, термін дії посвідчення (Zod-валідація)
+- **Крок 2:** 3 поля upload з `<input capture="environment">` для миттєвого фото з камери, прев'ю після завантаження. Файли зберігаються в `driver-docs/{driver_id}/license_front.jpg` тощо.
+- **Крок 3:** Підтвердження → статус → `on_verification`, екран "Очікуйте на перевірку адміністратором"
 
-Маршрут і пункт меню в `AdminSidebar`. Інтерфейс: dark-mode CRM, узгоджений з існуючими картками, мова — українська.
+В `DriverDashboard.tsx`: на початку — якщо статус `pending_details` чи `on_verification`, рендерити `<DriverOnboarding>` замість основного UI.
 
-### Технічні деталі
+### 5. Авторизація
 
-- Міграція через `supabase--migration` (створює файл, потребує підтвердження).
-- Після підтвердження — оновлю `AdminFinance.tsx` (додам віджети, дебіторку, фільтр за роллю) і `AdminSidebar.tsx` (за потреби).
-- `AuthContext` уже віддає `roles[]` — додам гетер `isAccountant` / `isManager`.
-- `manager_id` заповнюється в `CreateOrderModal` (поточний `auth.uid()` менеджера, який створює замовлення) — оновлю модалку.
+Залишаємо існуючий email/password (OTP по телефону потребує SMS-провайдер — окреме завдання). Driver реєструється з email і за телефоном його лінкує адмін у наступній ітерації, **АБО** використовуємо існуючий flow: після створення адміном водій реєструється на `/auth` з тим же телефоном, і ми робимо метч по `phone` у `drivers` (auto-link через handle_new_user).
 
-### Що НЕ роблю і чому
+**Рішення:** додати тригер, який при створенні profile з phone авто-лінкує існуючий driver-запис (`drivers.user_id := NEW.user_id WHERE drivers.phone = NEW.phone AND user_id IS NULL`).
 
-- НЕ додаю `role` в `profiles` — це порушує best-practices Supabase (роль у тій же таблиці = legkий privilege escalation через UPDATE profiles). Використовую існуючу `user_roles` + `has_role()`. Якщо все ж потрібна денормалізація — скажи окремо.
-- НЕ використовую CHECK з `now()` — замість цього view + тригер.
+### Технічна частина
+
+- Файли: edit `AddDriverModal.tsx`, `AdminDrivers.tsx`, `DriverDashboard.tsx`; create `DriverOnboarding.tsx`, `DriverVerificationModal.tsx`
+- Міграція: ALTER TABLE drivers + bucket driver-docs + storage policies + auto-link trigger
+- Без змін: AuthPage (працює як раніше)
+
+### OTP по телефону
+
+Не реалізую в цьому проході — потребує налаштування SMS-провайдера (Twilio) і це окреме рішення. Залишаю email/password з авто-лінком по номеру телефону. Якщо потрібен SMS OTP — скажіть, додам через Twilio-конектор.
