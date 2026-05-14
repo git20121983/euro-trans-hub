@@ -78,17 +78,33 @@ export default function AuthPage() {
         <div className="elevated-card rounded-2xl p-8">
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
-              <div>
-                <Label htmlFor="fullName">Повне ім'я</Label>
-                <Input
-                  id="fullName"
-                  placeholder="Іван Петренко"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="mt-1.5"
-                  required={!isLogin}
-                />
-              </div>
+              <>
+                <div>
+                  <Label htmlFor="fullName">Повне ім'я</Label>
+                  <Input
+                    id="fullName"
+                    placeholder="Іван Петренко"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="mt-1.5"
+                    required={!isLogin}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone">Телефон</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+380501234567"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="mt-1.5"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Якщо вас додав адміністратор як водія — введіть той самий номер
+                  </p>
+                </div>
+              </>
             )}
             <div>
               <Label htmlFor="email">Email</Label>
