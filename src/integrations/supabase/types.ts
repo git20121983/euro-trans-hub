@@ -16,40 +16,67 @@ export type Database = {
     Tables: {
       drivers: {
         Row: {
+          address: string | null
           assigned_truck_id: string | null
+          birth_date: string | null
           created_at: string
+          details_submitted_at: string | null
           full_name: string
           id: string
+          license_back_url: string | null
+          license_expiry: string | null
+          license_front_url: string | null
           license_number: string | null
           phone: string
           salary_rate: number | null
+          selfie_url: string | null
           status: string
           updated_at: string
           user_id: string | null
+          verified_at: string | null
+          verified_by: string | null
         }
         Insert: {
+          address?: string | null
           assigned_truck_id?: string | null
+          birth_date?: string | null
           created_at?: string
+          details_submitted_at?: string | null
           full_name: string
           id?: string
+          license_back_url?: string | null
+          license_expiry?: string | null
+          license_front_url?: string | null
           license_number?: string | null
           phone: string
           salary_rate?: number | null
+          selfie_url?: string | null
           status?: string
           updated_at?: string
           user_id?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Update: {
+          address?: string | null
           assigned_truck_id?: string | null
+          birth_date?: string | null
           created_at?: string
+          details_submitted_at?: string | null
           full_name?: string
           id?: string
+          license_back_url?: string | null
+          license_expiry?: string | null
+          license_front_url?: string | null
           license_number?: string | null
           phone?: string
           salary_rate?: number | null
+          selfie_url?: string | null
           status?: string
           updated_at?: string
           user_id?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Relationships: [
           {
