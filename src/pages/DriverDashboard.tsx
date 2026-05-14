@@ -51,54 +51,15 @@ export default function DriverDashboard() {
   const fetchDriverData = useCallback(async (userId: string) => {
     setLoading(true);
 
-    // Find existing driver record (unique constraint prevents duplicates)
-    let { data: driver } = await supabase
+    const { data: driver } = await supabase
       .from("drivers")
       .select("*")
       .eq("user_id", userId)
       .maybeSingle();
 
-    if (!driver) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("full_name, phone")
-        .eq("user_id", userId)
-        .maybeSingle();
+    setDriverRecord(driver ?? null);
 
-      const { data: newDriver, error: createError } = await supabase
-        .from("drivers")
-        .insert({
-          user_id: userId,
-          full_name: profile?.full_name ?? "Водій",
-          phone: profile?.phone ?? "",
-          status: "available",
-        })
-        .select("*")
-        .single();
-
-      if (createError) {
-        // If unique constraint violation, fetch the existing record
-        if (createError.code === "23505") {
-          const { data: existing } = await supabase
-            .from("drivers")
-            .select("*")
-            .eq("user_id", userId)
-            .single();
-          driver = existing;
-        } else {
-          console.error("Failed to create driver:", createError);
-          toast.error("Не вдалося створити профіль водія.");
-          setLoading(false);
-          return;
-        }
-      } else {
-        driver = newDriver;
-      }
-    }
-
-    setDriverRecord(driver);
-
-    if (driver) {
+    if (driver && !["pending_details", "on_verification"].includes(driver.status)) {
       const { data: driverOrders } = await supabase
         .from("orders")
         .select("*")
