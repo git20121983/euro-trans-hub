@@ -376,14 +376,12 @@ export default function DriverDashboard() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-background/70 backdrop-blur-xl border-b border-white/10 px-4 py-4 sticky top-0 z-10">
-        <div className="flex items-center justify-between max-w-lg mx-auto">
-          <div>
-            <h1 className="font-bold text-lg text-foreground">🚛 Euro Trans</h1>
-            <p className="text-xs text-muted-foreground">{driverRecord.full_name}</p>
-          </div>
-          <div className="text-right">
-            <span className={`text-xs px-2.5 py-1 rounded-full font-medium backdrop-blur-md border ${
+      <div className="bg-background/70 backdrop-blur-xl border-b border-white/10 px-4 py-3 sticky top-0 z-10">
+        <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
+          <div className="min-w-0">
+            <h1 className="font-bold text-base text-foreground truncate">🚛 Euro Trans</h1>
+            <p className="text-[11px] text-muted-foreground truncate">{driverRecord.full_name}</p>
+            <span className={`inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full font-medium border ${
               driverRecord.status === "available"
                 ? "bg-green-500/15 text-green-300 border-green-500/30"
                 : driverRecord.status === "in_transit"
@@ -395,7 +393,9 @@ export default function DriverDashboard() {
               {DRIVER_STATUSES.find(s => s.id === driverRecord.status)?.label ?? "Вільний"}
             </span>
           </div>
+          <DriverProfileMenu driver={driverRecord} onUpdated={setDriverRecord} />
         </div>
+      </div>
       </div>
 
       <div className="max-w-lg mx-auto p-4 space-y-4">
