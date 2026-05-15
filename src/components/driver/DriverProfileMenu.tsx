@@ -202,7 +202,7 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
     }
     const { data, error } = await supabase
       .from("drivers")
-      .update({ [key]: path })
+      .update({ [key]: path } as Partial<Driver>)
       .eq("id", driver.id)
       .select("*")
       .single();
