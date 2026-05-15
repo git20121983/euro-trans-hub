@@ -467,8 +467,21 @@ export default function DriverDashboard() {
           </div>
         )}
 
-        {/* Orders */}
-        {orders.length === 0 ? (
+        {/* Verification gate */}
+        {!driverRecord.verified_at && (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 flex items-start gap-3">
+            <Shield className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+            <div className="text-sm">
+              <p className="font-semibold text-amber-200">Доступ до рейсів обмежено</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Завершіть верифікацію профілю, щоб отримувати та приймати нові рейси. Натисніть на аватар угорі.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Orders — only for verified drivers */}
+        {!driverRecord.verified_at ? null : orders.length === 0 ? (
           <div className="text-center py-16 space-y-3">
             <Package className="w-12 h-12 text-muted-foreground mx-auto" />
             <h2 className="text-lg font-semibold">Активних рейсів немає</h2>
