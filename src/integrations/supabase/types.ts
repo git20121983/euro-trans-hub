@@ -17,7 +17,10 @@ export type Database = {
       drivers: {
         Row: {
           address: string | null
+          adr_certificate_url: string | null
+          adr_certified: boolean
           assigned_truck_id: string | null
+          avatar_url: string | null
           birth_date: string | null
           created_at: string
           details_submitted_at: string | null
@@ -25,6 +28,8 @@ export type Database = {
           full_name: string
           id: string
           id_card_url: string | null
+          intl_passport_expiry: string | null
+          intl_passport_url: string | null
           license_back_url: string | null
           license_expiry: string | null
           license_front_url: string | null
@@ -34,6 +39,9 @@ export type Database = {
           salary_rate: number | null
           selfie_url: string | null
           status: string
+          tacho_card_url: string | null
+          tacho_expiry: string | null
+          tax_id: string | null
           updated_at: string
           user_id: string | null
           verified_at: string | null
@@ -42,7 +50,10 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          adr_certificate_url?: string | null
+          adr_certified?: boolean
           assigned_truck_id?: string | null
+          avatar_url?: string | null
           birth_date?: string | null
           created_at?: string
           details_submitted_at?: string | null
@@ -50,6 +61,8 @@ export type Database = {
           full_name: string
           id?: string
           id_card_url?: string | null
+          intl_passport_expiry?: string | null
+          intl_passport_url?: string | null
           license_back_url?: string | null
           license_expiry?: string | null
           license_front_url?: string | null
@@ -59,6 +72,9 @@ export type Database = {
           salary_rate?: number | null
           selfie_url?: string | null
           status?: string
+          tacho_card_url?: string | null
+          tacho_expiry?: string | null
+          tax_id?: string | null
           updated_at?: string
           user_id?: string | null
           verified_at?: string | null
@@ -67,7 +83,10 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          adr_certificate_url?: string | null
+          adr_certified?: boolean
           assigned_truck_id?: string | null
+          avatar_url?: string | null
           birth_date?: string | null
           created_at?: string
           details_submitted_at?: string | null
@@ -75,6 +94,8 @@ export type Database = {
           full_name?: string
           id?: string
           id_card_url?: string | null
+          intl_passport_expiry?: string | null
+          intl_passport_url?: string | null
           license_back_url?: string | null
           license_expiry?: string | null
           license_front_url?: string | null
@@ -84,6 +105,9 @@ export type Database = {
           salary_rate?: number | null
           selfie_url?: string | null
           status?: string
+          tacho_card_url?: string | null
+          tacho_expiry?: string | null
+          tax_id?: string | null
           updated_at?: string
           user_id?: string | null
           verified_at?: string | null
