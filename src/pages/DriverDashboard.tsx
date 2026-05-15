@@ -396,7 +396,6 @@ export default function DriverDashboard() {
           <DriverProfileMenu driver={driverRecord} onUpdated={setDriverRecord} />
         </div>
       </div>
-      </div>
 
       <div className="max-w-lg mx-auto p-4 space-y-4">
         <input
