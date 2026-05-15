@@ -11,10 +11,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -35,7 +36,6 @@ import {
   Camera,
   Loader2,
   Upload,
-  User as UserIcon,
 } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -51,7 +51,12 @@ const extraSchema = z.object({
   years_experience: z.coerce.number().int().min(0).max(60),
   medical_expiry: z.string().min(1, "Вкажіть дату"),
   emergency_contact: z.string().trim().min(5, "Вкажіть контакт").max(120),
+  tax_id: z.string().trim().regex(/^\d{10}$/, "РНОКПП — рівно 10 цифр"),
+  tacho_expiry: z.string().min(1, "Вкажіть термін дії чіп-карти"),
+  intl_passport_expiry: z.string().optional().or(z.literal("")),
 });
+
+type DocKey = "id_card_url" | "tacho_card_url" | "adr_certificate_url" | "intl_passport_url";
 
 export default function DriverProfileMenu({ driver, onUpdated }: Props) {
   const { signOut } = useAuth();
@@ -59,13 +64,36 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
   const [stats, setStats] = useState({ totalKm: 0, completed: 0 });
   const [openDialog, setOpenDialog] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [uploadingId, setUploadingId] = useState(false);
-  const idCardRef = useRef<HTMLInputElement>(null);
+  const [uploadingDoc, setUploadingDoc] = useState<DocKey | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarPublicUrl, setAvatarPublicUrl] = useState<string | null>(null);
+
+  const docRefs = useRef<Record<DocKey, HTMLInputElement | null>>({
+    id_card_url: null,
+    tacho_card_url: null,
+    adr_certificate_url: null,
+    intl_passport_url: null,
+  });
+  const avatarRef = useRef<HTMLInputElement>(null);
 
   const [yearsExp, setYearsExp] = useState<string>(driver.years_experience?.toString() ?? "");
   const [medExpiry, setMedExpiry] = useState(driver.medical_expiry ?? "");
   const [emergency, setEmergency] = useState(driver.emergency_contact ?? "");
+  const [taxId, setTaxId] = useState(driver.tax_id ?? "");
+  const [tachoExpiry, setTachoExpiry] = useState(driver.tacho_expiry ?? "");
+  const [adrCertified, setAdrCertified] = useState(!!driver.adr_certified);
+  const [intlExpiry, setIntlExpiry] = useState(driver.intl_passport_expiry ?? "");
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Resolve avatar URL
+  useEffect(() => {
+    if (driver.avatar_url) {
+      const { data } = supabase.storage.from("driver-avatars").getPublicUrl(driver.avatar_url);
+      setAvatarPublicUrl(`${data.publicUrl}?t=${Date.now()}`);
+    } else {
+      setAvatarPublicUrl(null);
+    }
+  }, [driver.avatar_url]);
 
   // Fetch truck + stats
   useEffect(() => {
@@ -91,6 +119,7 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
   // Verification %
   const checks = useMemo(() => {
     return [
+      { key: "avatar_url", label: "Фото профілю", ok: !!driver.avatar_url },
       { key: "birth_date", label: "Дата народження", ok: !!driver.birth_date },
       { key: "address", label: "Адреса", ok: !!driver.address },
       { key: "license_expiry", label: "Термін посвідчення", ok: !!driver.license_expiry },
@@ -98,6 +127,10 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
       { key: "license_back_url", label: "Фото посв. (зворот)", ok: !!driver.license_back_url },
       { key: "selfie_url", label: "Селфі", ok: !!driver.selfie_url },
       { key: "id_card_url", label: "Фото паспорта/ID", ok: !!driver.id_card_url },
+      { key: "tax_id", label: "РНОКПП", ok: !!driver.tax_id },
+      { key: "tacho_card_url", label: "Чіп-карта тахографа", ok: !!driver.tacho_card_url && !!driver.tacho_expiry },
+      { key: "adr", label: "Допуск ADR", ok: driver.adr_certified ? !!driver.adr_certificate_url : true },
+      { key: "intl_passport_url", label: "Закордонний паспорт", ok: !!driver.intl_passport_url },
       { key: "years_experience", label: "Стаж", ok: driver.years_experience != null },
       { key: "medical_expiry", label: "Медогляд", ok: !!driver.medical_expiry },
       { key: "emergency_contact", label: "Екстрений контакт", ok: !!driver.emergency_contact },
@@ -116,7 +149,6 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
     .join("")
     .toUpperCase();
 
-  // Status ring color
   const ringColor = isVerified
     ? "stroke-green-500"
     : isUnderReview
@@ -129,25 +161,52 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
     : { icon: AlertCircle, label: `${completion}% завершено`, cls: "bg-red-500/15 text-red-300 border-red-500/30" };
   const StatusIcon = statusBadge.icon;
 
-  const handleIdUpload = async (file: File) => {
-    setUploadingId(true);
+  const handleAvatarUpload = async (file: File) => {
+    setUploadingAvatar(true);
     const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-    const path = `${driver.id}/id_card.${ext}`;
+    const path = `${driver.id}/avatar.${ext}`;
     const { error: upErr } = await supabase.storage
-      .from("driver-docs")
+      .from("driver-avatars")
       .upload(path, file, { cacheControl: "3600", upsert: true, contentType: file.type });
     if (upErr) {
-      setUploadingId(false);
+      setUploadingAvatar(false);
       toast.error(`Помилка: ${upErr.message}`);
       return;
     }
     const { data, error } = await supabase
       .from("drivers")
-      .update({ id_card_url: path })
+      .update({ avatar_url: path })
       .eq("id", driver.id)
       .select("*")
       .single();
-    setUploadingId(false);
+    setUploadingAvatar(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    if (data) onUpdated(data);
+    toast.success("Фото профілю оновлено");
+  };
+
+  const handleDocUpload = async (key: DocKey, fileName: string, file: File) => {
+    setUploadingDoc(key);
+    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const path = `${driver.id}/${fileName}.${ext}`;
+    const { error: upErr } = await supabase.storage
+      .from("driver-docs")
+      .upload(path, file, { cacheControl: "3600", upsert: true, contentType: file.type });
+    if (upErr) {
+      setUploadingDoc(null);
+      toast.error(`Помилка: ${upErr.message}`);
+      return;
+    }
+    const { data, error } = await supabase
+      .from("drivers")
+      .update({ [key]: path })
+      .eq("id", driver.id)
+      .select("*")
+      .single();
+    setUploadingDoc(null);
     if (error) {
       toast.error(error.message);
       return;
@@ -161,6 +220,9 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
       years_experience: yearsExp,
       medical_expiry: medExpiry,
       emergency_contact: emergency,
+      tax_id: taxId,
+      tacho_expiry: tachoExpiry,
+      intl_passport_expiry: intlExpiry,
     });
     if (!result.success) {
       const errs: Record<string, string> = {};
@@ -174,16 +236,25 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
       years_experience: result.data.years_experience,
       medical_expiry: result.data.medical_expiry,
       emergency_contact: result.data.emergency_contact,
+      tax_id: result.data.tax_id,
+      tacho_expiry: result.data.tacho_expiry,
+      adr_certified: adrCertified,
+      intl_passport_expiry: intlExpiry || null,
     };
-    // If now everything filled, send for review
+
     const willBeComplete =
+      !!driver.avatar_url &&
       !!driver.birth_date &&
       !!driver.address &&
       !!driver.license_expiry &&
       !!driver.license_front_url &&
       !!driver.license_back_url &&
       !!driver.selfie_url &&
-      !!driver.id_card_url;
+      !!driver.id_card_url &&
+      !!driver.tacho_card_url &&
+      !!driver.intl_passport_url &&
+      (!adrCertified || !!driver.adr_certificate_url);
+
     if (willBeComplete && !driver.verified_at) {
       updates.status = "on_verification";
       updates.details_submitted_at = new Date().toISOString();
@@ -204,10 +275,59 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
     setOpenDialog(false);
   };
 
-  // SVG circle
   const radius = 18;
   const circ = 2 * Math.PI * radius;
   const offset = circ - (completion / 100) * circ;
+
+  // Reusable doc upload row
+  const DocRow = ({
+    docKey,
+    fileName,
+    label,
+    accept = "image/*",
+    capture = "environment" as const,
+  }: {
+    docKey: DocKey;
+    fileName: string;
+    label: string;
+    accept?: string;
+    capture?: "environment" | "user";
+  }) => {
+    const url = driver[docKey];
+    const isUploading = uploadingDoc === docKey;
+    return (
+      <div className="space-y-2">
+        <Label>{label}</Label>
+        <input
+          ref={(el) => (docRefs.current[docKey] = el)}
+          type="file"
+          accept={accept}
+          capture={capture}
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) handleDocUpload(docKey, fileName, f);
+            e.target.value = "";
+          }}
+        />
+        <Button
+          type="button"
+          variant={url ? "outline" : "default"}
+          className="w-full"
+          disabled={isUploading}
+          onClick={() => docRefs.current[docKey]?.click()}
+        >
+          {isUploading ? (
+            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Завантаження...</>
+          ) : url ? (
+            <><Upload className="w-4 h-4 mr-2" /> Замінити фото</>
+          ) : (
+            <><Camera className="w-4 h-4 mr-2" /> Зробити фото</>
+          )}
+        </Button>
+      </div>
+    );
+  };
 
   return (
     <>
@@ -215,11 +335,11 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
         <DropdownMenuTrigger asChild>
           <button className="relative outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full">
             <Avatar className="w-11 h-11 border border-white/15">
+              {avatarPublicUrl && <AvatarImage src={avatarPublicUrl} alt={driver.full_name} />}
               <AvatarFallback className="bg-primary/20 text-primary font-semibold text-sm">
                 {initials}
               </AvatarFallback>
             </Avatar>
-            {/* Verification ring */}
             <svg className="absolute -inset-1 w-[calc(100%+8px)] h-[calc(100%+8px)] -rotate-90 pointer-events-none" viewBox="0 0 44 44">
               <circle cx="22" cy="22" r={radius} fill="none" className="stroke-white/10" strokeWidth="2.5" />
               <circle
@@ -246,6 +366,7 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
           <DropdownMenuLabel className="pb-2">
             <div className="flex items-center gap-3">
               <Avatar className="w-10 h-10">
+                {avatarPublicUrl && <AvatarImage src={avatarPublicUrl} alt={driver.full_name} />}
                 <AvatarFallback className="bg-primary/20 text-primary text-xs font-semibold">
                   {initials}
                 </AvatarFallback>
@@ -342,6 +463,45 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
           </DialogHeader>
 
           <div className="space-y-4">
+            {/* Avatar uploader */}
+            <div className="flex flex-col items-center gap-3 rounded-lg border border-border bg-muted/20 p-4">
+              <div className="relative">
+                <Avatar className="w-20 h-20 border-2 border-primary/30">
+                  {avatarPublicUrl && <AvatarImage src={avatarPublicUrl} alt={driver.full_name} />}
+                  <AvatarFallback className="bg-primary/20 text-primary text-xl font-semibold">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                {uploadingAvatar && (
+                  <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 animate-spin text-white" />
+                  </div>
+                )}
+              </div>
+              <input
+                ref={avatarRef}
+                type="file"
+                accept="image/*"
+                capture="user"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleAvatarUpload(f);
+                  e.target.value = "";
+                }}
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={uploadingAvatar}
+                onClick={() => avatarRef.current?.click()}
+              >
+                <Camera className="w-4 h-4 mr-2" />
+                {driver.avatar_url ? "Змінити фото профілю" : "Завантажити фото профілю"}
+              </Button>
+            </div>
+
             {/* Checklist */}
             <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-1.5">
               {checks.map((c) => (
@@ -358,36 +518,55 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
               ))}
             </div>
 
-            {/* ID card upload */}
+            <DocRow docKey="id_card_url" fileName="id_card" label="Паспорт / ID-картка" />
+
             <div className="space-y-2">
-              <Label>Паспорт / ID-картка</Label>
-              <input
-                ref={idCardRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) handleIdUpload(f);
-                  e.target.value = "";
-                }}
+              <Label htmlFor="taxid">РНОКПП (ідентифікаційний код) *</Label>
+              <Input
+                id="taxid"
+                inputMode="numeric"
+                maxLength={10}
+                value={taxId}
+                onChange={(e) => setTaxId(e.target.value.replace(/\D/g, ""))}
+                placeholder="1234567890"
               />
-              <Button
-                type="button"
-                variant={driver.id_card_url ? "outline" : "default"}
-                className="w-full"
-                disabled={uploadingId}
-                onClick={() => idCardRef.current?.click()}
-              >
-                {uploadingId ? (
-                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Завантаження...</>
-                ) : driver.id_card_url ? (
-                  <><Upload className="w-4 h-4 mr-2" /> Замінити фото</>
-                ) : (
-                  <><Camera className="w-4 h-4 mr-2" /> Зробити фото</>
-                )}
-              </Button>
+              {errors.tax_id && <p className="text-xs text-destructive">{errors.tax_id}</p>}
+            </div>
+
+            <DocRow docKey="tacho_card_url" fileName="tacho_card" label="Чіп-карта водія (тахограф)" />
+            <div className="space-y-2">
+              <Label htmlFor="tachoexp">Чіп-карта дійсна до *</Label>
+              <Input
+                id="tachoexp"
+                type="date"
+                value={tachoExpiry}
+                onChange={(e) => setTachoExpiry(e.target.value)}
+              />
+              {errors.tacho_expiry && <p className="text-xs text-destructive">{errors.tacho_expiry}</p>}
+            </div>
+
+            <div className="rounded-lg border border-border p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="adr" className="text-sm">Допуск ADR (небезпечні вантажі)</Label>
+                  <p className="text-[11px] text-muted-foreground">Сертифікат на перевезення ADR</p>
+                </div>
+                <Switch id="adr" checked={adrCertified} onCheckedChange={setAdrCertified} />
+              </div>
+              {adrCertified && (
+                <DocRow docKey="adr_certificate_url" fileName="adr_certificate" label="Фото сертифіката ADR" />
+              )}
+            </div>
+
+            <DocRow docKey="intl_passport_url" fileName="intl_passport" label="Закордонний паспорт" />
+            <div className="space-y-2">
+              <Label htmlFor="intlexp">Закордонний паспорт дійсний до</Label>
+              <Input
+                id="intlexp"
+                type="date"
+                value={intlExpiry}
+                onChange={(e) => setIntlExpiry(e.target.value)}
+              />
             </div>
 
             <div className="space-y-2">
