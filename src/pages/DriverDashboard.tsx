@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 import DriverOnboarding from "./DriverOnboarding";
+import DriverProfileMenu from "@/components/driver/DriverProfileMenu";
 
 type Order = Tables<"orders">;
 type Driver = Tables<"drivers">;
