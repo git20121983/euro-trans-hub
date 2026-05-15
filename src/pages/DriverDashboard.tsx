@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 import DriverOnboarding from "./DriverOnboarding";
+import DriverProfileMenu from "@/components/driver/DriverProfileMenu";
 
 type Order = Tables<"orders">;
 type Driver = Tables<"drivers">;
@@ -375,14 +376,12 @@ export default function DriverDashboard() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-background/70 backdrop-blur-xl border-b border-white/10 px-4 py-4 sticky top-0 z-10">
-        <div className="flex items-center justify-between max-w-lg mx-auto">
-          <div>
-            <h1 className="font-bold text-lg text-foreground">🚛 Euro Trans</h1>
-            <p className="text-xs text-muted-foreground">{driverRecord.full_name}</p>
-          </div>
-          <div className="text-right">
-            <span className={`text-xs px-2.5 py-1 rounded-full font-medium backdrop-blur-md border ${
+      <div className="bg-background/70 backdrop-blur-xl border-b border-white/10 px-4 py-3 sticky top-0 z-10">
+        <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
+          <div className="min-w-0">
+            <h1 className="font-bold text-base text-foreground truncate">🚛 Euro Trans</h1>
+            <p className="text-[11px] text-muted-foreground truncate">{driverRecord.full_name}</p>
+            <span className={`inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full font-medium border ${
               driverRecord.status === "available"
                 ? "bg-green-500/15 text-green-300 border-green-500/30"
                 : driverRecord.status === "in_transit"
@@ -394,6 +393,7 @@ export default function DriverDashboard() {
               {DRIVER_STATUSES.find(s => s.id === driverRecord.status)?.label ?? "Вільний"}
             </span>
           </div>
+          <DriverProfileMenu driver={driverRecord} onUpdated={setDriverRecord} />
         </div>
       </div>
 
@@ -467,8 +467,21 @@ export default function DriverDashboard() {
           </div>
         )}
 
-        {/* Orders */}
-        {orders.length === 0 ? (
+        {/* Verification gate */}
+        {!driverRecord.verified_at && (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 flex items-start gap-3">
+            <Shield className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+            <div className="text-sm">
+              <p className="font-semibold text-amber-200">Доступ до рейсів обмежено</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Завершіть верифікацію профілю, щоб отримувати та приймати нові рейси. Натисніть на аватар угорі.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Orders — only for verified drivers */}
+        {!driverRecord.verified_at ? null : orders.length === 0 ? (
           <div className="text-center py-16 space-y-3">
             <Package className="w-12 h-12 text-muted-foreground mx-auto" />
             <h2 className="text-lg font-semibold">Активних рейсів немає</h2>

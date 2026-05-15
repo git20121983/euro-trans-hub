@@ -21,12 +21,15 @@ export type Database = {
           birth_date: string | null
           created_at: string
           details_submitted_at: string | null
+          emergency_contact: string | null
           full_name: string
           id: string
+          id_card_url: string | null
           license_back_url: string | null
           license_expiry: string | null
           license_front_url: string | null
           license_number: string | null
+          medical_expiry: string | null
           phone: string
           salary_rate: number | null
           selfie_url: string | null
@@ -35,6 +38,7 @@ export type Database = {
           user_id: string | null
           verified_at: string | null
           verified_by: string | null
+          years_experience: number | null
         }
         Insert: {
           address?: string | null
@@ -42,12 +46,15 @@ export type Database = {
           birth_date?: string | null
           created_at?: string
           details_submitted_at?: string | null
+          emergency_contact?: string | null
           full_name: string
           id?: string
+          id_card_url?: string | null
           license_back_url?: string | null
           license_expiry?: string | null
           license_front_url?: string | null
           license_number?: string | null
+          medical_expiry?: string | null
           phone: string
           salary_rate?: number | null
           selfie_url?: string | null
@@ -56,6 +63,7 @@ export type Database = {
           user_id?: string | null
           verified_at?: string | null
           verified_by?: string | null
+          years_experience?: number | null
         }
         Update: {
           address?: string | null
@@ -63,12 +71,15 @@ export type Database = {
           birth_date?: string | null
           created_at?: string
           details_submitted_at?: string | null
+          emergency_contact?: string | null
           full_name?: string
           id?: string
+          id_card_url?: string | null
           license_back_url?: string | null
           license_expiry?: string | null
           license_front_url?: string | null
           license_number?: string | null
+          medical_expiry?: string | null
           phone?: string
           salary_rate?: number | null
           selfie_url?: string | null
@@ -77,6 +88,7 @@ export type Database = {
           user_id?: string | null
           verified_at?: string | null
           verified_by?: string | null
+          years_experience?: number | null
         }
         Relationships: [
           {
