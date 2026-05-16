@@ -104,7 +104,41 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
     }
   }, [driver.avatar_url]);
 
-  // Fetch truck + stats
+  // Resolve signed previews for driver-docs files
+  useEffect(() => {
+    const paths = [
+      driver.license_front_url,
+      driver.license_back_url,
+      driver.selfie_url,
+      driver.id_card_url,
+      driver.tacho_card_url,
+      driver.adr_certificate_url,
+      driver.intl_passport_url,
+    ].filter(Boolean) as string[];
+    if (!paths.length) {
+      setDocPreviews({});
+      return;
+    }
+    supabase.storage
+      .from("driver-docs")
+      .createSignedUrls(paths, 3600)
+      .then(({ data }) => {
+        const map: Record<string, string> = {};
+        data?.forEach((d, i) => {
+          if (d.signedUrl) map[paths[i]] = d.signedUrl;
+        });
+        setDocPreviews(map);
+      });
+  }, [
+    driver.license_front_url,
+    driver.license_back_url,
+    driver.selfie_url,
+    driver.id_card_url,
+    driver.tacho_card_url,
+    driver.adr_certificate_url,
+    driver.intl_passport_url,
+  ]);
+
   useEffect(() => {
     (async () => {
       if (driver.assigned_truck_id) {
