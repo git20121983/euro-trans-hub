@@ -56,7 +56,13 @@ const extraSchema = z.object({
   intl_passport_expiry: z.string().optional().or(z.literal("")),
 });
 
-type DocKey = "id_card_url" | "tacho_card_url" | "adr_certificate_url" | "intl_passport_url";
+type DocKey =
+  | "id_card_url"
+  | "tacho_card_url"
+  | "adr_certificate_url"
+  | "intl_passport_url"
+  | "license_front_url"
+  | "license_back_url";
 
 export default function DriverProfileMenu({ driver, onUpdated }: Props) {
   const { signOut } = useAuth();
