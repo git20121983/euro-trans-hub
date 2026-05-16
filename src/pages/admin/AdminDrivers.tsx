@@ -123,6 +123,7 @@ export default function AdminDrivers() {
         open={!!verifying}
         onOpenChange={(o) => !o && setVerifying(null)}
         onActioned={loadData}
+        initialTab={docsTab}
       />
 
       {drivers.length === 0 ? (
