@@ -574,6 +574,22 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
               ))}
             </div>
 
+            <div className="rounded-lg border border-border p-3 space-y-3">
+              <p className="text-sm font-semibold">Посвідчення водія</p>
+              <DocRow
+                docKey="license_front_url"
+                fileName="license_front"
+                label="Фото посвідчення (Передня сторона)"
+                hint="Сфотографуйте передню частину з вашим фото"
+              />
+              <DocRow
+                docKey="license_back_url"
+                fileName="license_back"
+                label="Фото посвідчення (Зворотна сторона)"
+                hint="Сфотографуйте зворотну частину з категоріями"
+              />
+            </div>
+
             <DocRow docKey="id_card_url" fileName="id_card" label="Паспорт / ID-картка" />
 
             <div className="space-y-2">
