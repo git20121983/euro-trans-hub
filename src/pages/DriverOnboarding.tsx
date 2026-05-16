@@ -47,6 +47,17 @@ export default function DriverOnboarding({ driver, onUpdated }: Props) {
     license_back_url: null,
     selfie_url: null,
   });
+  const [previews, setPreviews] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const paths = [driver.license_front_url, driver.license_back_url, driver.selfie_url].filter(Boolean) as string[];
+    if (!paths.length) { setPreviews({}); return; }
+    supabase.storage.from("driver-docs").createSignedUrls(paths, 3600).then(({ data }) => {
+      const map: Record<string, string> = {};
+      data?.forEach((d, i) => { if (d.signedUrl) map[paths[i]] = d.signedUrl; });
+      setPreviews(map);
+    });
+  }, [driver.license_front_url, driver.license_back_url, driver.selfie_url]);
 
   const isOnVerification = driver.status === "on_verification";
   const progress = isOnVerification ? 100 : step === 1 ? 33 : step === 2 ? 66 : 100;
