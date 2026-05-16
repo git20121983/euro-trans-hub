@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Phone, Truck, Plus, ShieldCheck, Clock, AlertCircle } from "lucide-react";
+import { Users, Phone, Truck, Plus, ShieldCheck, Clock, AlertCircle, FolderOpen } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -39,6 +39,7 @@ export default function AdminDrivers() {
   const [trucks, setTrucks] = useState<Tables<"trucks">[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [verifying, setVerifying] = useState<Driver | null>(null);
+  const [docsTab, setDocsTab] = useState<"overview" | "documents">("overview");
   const isMobile = useIsMobile();
 
   const loadData = useCallback(() => {
@@ -122,6 +123,7 @@ export default function AdminDrivers() {
         open={!!verifying}
         onOpenChange={(o) => !o && setVerifying(null)}
         onActioned={loadData}
+        initialTab={docsTab}
       />
 
       {drivers.length === 0 ? (
@@ -151,11 +153,16 @@ export default function AdminDrivers() {
                     {truck.plate_number} ({truck.model})
                   </div>
                 )}
-                {needsVerify && (
-                  <Button size="sm" onClick={() => setVerifying(driver)} className="w-full mt-2 bg-amber-600 hover:bg-amber-700">
-                    <ShieldCheck className="w-4 h-4 mr-1.5" /> Перевірити документи
+                <div className="flex gap-2 mt-2">
+                  <Button size="sm" variant="outline" onClick={() => { setDocsTab("documents"); setVerifying(driver); }} className="flex-1">
+                    <FolderOpen className="w-4 h-4 mr-1.5" /> Документи
                   </Button>
-                )}
+                  {needsVerify && (
+                    <Button size="sm" onClick={() => { setDocsTab("overview"); setVerifying(driver); }} className="flex-1 bg-amber-600 hover:bg-amber-700">
+                      <ShieldCheck className="w-4 h-4 mr-1.5" /> Перевірити
+                    </Button>
+                  )}
+                </div>
                 {driver.status === "pending_details" && (
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
                     <Clock className="w-3 h-3" /> Очікуємо реєстрації водія за телефоном
@@ -207,11 +214,16 @@ export default function AdminDrivers() {
                       )}
                     </td>
                     <td className="p-4 text-right">
-                      {needsVerify && (
-                        <Button size="sm" onClick={() => setVerifying(driver)} className="bg-amber-600 hover:bg-amber-700">
-                          <ShieldCheck className="w-3.5 h-3.5 mr-1.5" /> Перевірити
+                      <div className="flex justify-end gap-2">
+                        <Button size="sm" variant="outline" onClick={() => { setDocsTab("documents"); setVerifying(driver); }}>
+                          <FolderOpen className="w-3.5 h-3.5 mr-1.5" /> Документи
                         </Button>
-                      )}
+                        {needsVerify && (
+                          <Button size="sm" onClick={() => { setDocsTab("overview"); setVerifying(driver); }} className="bg-amber-600 hover:bg-amber-700">
+                            <ShieldCheck className="w-3.5 h-3.5 mr-1.5" /> Перевірити
+                          </Button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
