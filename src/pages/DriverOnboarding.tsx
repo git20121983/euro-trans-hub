@@ -26,8 +26,8 @@ const detailsSchema = z.object({
 type PhotoKey = "license_front_url" | "license_back_url" | "selfie_url";
 
 const PHOTO_FIELDS: Array<{ key: PhotoKey; label: string; fileName: string; hint: string }> = [
-  { key: "license_front_url", label: "Лицьовий бік посвідчення", fileName: "license_front", hint: "Фото з боку з фотографією" },
-  { key: "license_back_url", label: "Зворотній бік посвідчення", fileName: "license_back", hint: "Фото з боку з категоріями" },
+  { key: "license_front_url", label: "Фото посвідчення (Передня сторона)", fileName: "license_front", hint: "Сфотографуйте передню частину з вашим фото" },
+  { key: "license_back_url", label: "Фото посвідчення (Зворотна сторона)", fileName: "license_back", hint: "Сфотографуйте зворотну частину з категоріями" },
   { key: "selfie_url", label: "Фото профілю (селфі)", fileName: "selfie", hint: "Чітке фото обличчя" },
 ];
 
