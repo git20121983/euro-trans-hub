@@ -153,11 +153,16 @@ export default function AdminDrivers() {
                     {truck.plate_number} ({truck.model})
                   </div>
                 )}
-                {needsVerify && (
-                  <Button size="sm" onClick={() => setVerifying(driver)} className="w-full mt-2 bg-amber-600 hover:bg-amber-700">
-                    <ShieldCheck className="w-4 h-4 mr-1.5" /> Перевірити документи
+                <div className="flex gap-2 mt-2">
+                  <Button size="sm" variant="outline" onClick={() => { setDocsTab("documents"); setVerifying(driver); }} className="flex-1">
+                    <FolderOpen className="w-4 h-4 mr-1.5" /> Документи
                   </Button>
-                )}
+                  {needsVerify && (
+                    <Button size="sm" onClick={() => { setDocsTab("overview"); setVerifying(driver); }} className="flex-1 bg-amber-600 hover:bg-amber-700">
+                      <ShieldCheck className="w-4 h-4 mr-1.5" /> Перевірити
+                    </Button>
+                  )}
+                </div>
                 {driver.status === "pending_details" && (
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
                     <Clock className="w-3 h-3" /> Очікуємо реєстрації водія за телефоном
