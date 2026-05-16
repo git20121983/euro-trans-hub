@@ -79,7 +79,10 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
     tacho_card_url: null,
     adr_certificate_url: null,
     intl_passport_url: null,
+    license_front_url: null,
+    license_back_url: null,
   });
+  const [docPreviews, setDocPreviews] = useState<Record<string, string>>({});
   const avatarRef = useRef<HTMLInputElement>(null);
 
   const [yearsExp, setYearsExp] = useState<string>(driver.years_experience?.toString() ?? "");
