@@ -214,11 +214,16 @@ export default function AdminDrivers() {
                       )}
                     </td>
                     <td className="p-4 text-right">
-                      {needsVerify && (
-                        <Button size="sm" onClick={() => setVerifying(driver)} className="bg-amber-600 hover:bg-amber-700">
-                          <ShieldCheck className="w-3.5 h-3.5 mr-1.5" /> Перевірити
+                      <div className="flex justify-end gap-2">
+                        <Button size="sm" variant="outline" onClick={() => { setDocsTab("documents"); setVerifying(driver); }}>
+                          <FolderOpen className="w-3.5 h-3.5 mr-1.5" /> Документи
                         </Button>
-                      )}
+                        {needsVerify && (
+                          <Button size="sm" onClick={() => { setDocsTab("overview"); setVerifying(driver); }} className="bg-amber-600 hover:bg-amber-700">
+                            <ShieldCheck className="w-3.5 h-3.5 mr-1.5" /> Перевірити
+                          </Button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
