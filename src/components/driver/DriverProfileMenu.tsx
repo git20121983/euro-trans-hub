@@ -327,20 +327,24 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
     docKey,
     fileName,
     label,
+    hint,
     accept = "image/*",
     capture = "environment" as const,
   }: {
     docKey: DocKey;
     fileName: string;
     label: string;
+    hint?: string;
     accept?: string;
     capture?: "environment" | "user";
   }) => {
     const url = driver[docKey];
     const isUploading = uploadingDoc === docKey;
+    const previewUrl = url ? docPreviews[url] : null;
     return (
       <div className="space-y-2">
         <Label>{label}</Label>
+        {hint && <p className="text-[11px] text-muted-foreground -mt-1">{hint}</p>}
         <input
           ref={(el) => (docRefs.current[docKey] = el)}
           type="file"
@@ -353,6 +357,15 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
             e.target.value = "";
           }}
         />
+        {previewUrl && (
+          <a href={previewUrl} target="_blank" rel="noreferrer" className="block">
+            <img
+              src={previewUrl}
+              alt={label}
+              className="rounded-md border border-border w-full aspect-[3/2] object-cover"
+            />
+          </a>
+        )}
         <Button
           type="button"
           variant={url ? "outline" : "default"}
