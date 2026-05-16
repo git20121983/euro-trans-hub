@@ -246,6 +246,16 @@ export default function DriverOnboarding({ driver, onUpdated }: Props) {
                     {url && <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />}
                   </div>
 
+                  {url && previews[url] && (
+                    <a href={previews[url]} target="_blank" rel="noreferrer" className="block">
+                      <img
+                        src={previews[url]}
+                        alt={f.label}
+                        className="rounded-md border border-border w-full aspect-[3/2] object-cover"
+                      />
+                    </a>
+                  )}
+
                   <input
                     ref={(el) => (fileInputs.current[f.key] = el)}
                     type="file"
