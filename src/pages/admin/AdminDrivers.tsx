@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Phone, Truck, Plus, ShieldCheck, Clock, AlertCircle } from "lucide-react";
+import { Users, Phone, Truck, Plus, ShieldCheck, Clock, AlertCircle, FolderOpen } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
