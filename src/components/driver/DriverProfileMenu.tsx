@@ -56,7 +56,13 @@ const extraSchema = z.object({
   intl_passport_expiry: z.string().optional().or(z.literal("")),
 });
 
-type DocKey = "id_card_url" | "tacho_card_url" | "adr_certificate_url" | "intl_passport_url";
+type DocKey =
+  | "id_card_url"
+  | "tacho_card_url"
+  | "adr_certificate_url"
+  | "intl_passport_url"
+  | "license_front_url"
+  | "license_back_url";
 
 export default function DriverProfileMenu({ driver, onUpdated }: Props) {
   const { signOut } = useAuth();
@@ -73,7 +79,10 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
     tacho_card_url: null,
     adr_certificate_url: null,
     intl_passport_url: null,
+    license_front_url: null,
+    license_back_url: null,
   });
+  const [docPreviews, setDocPreviews] = useState<Record<string, string>>({});
   const avatarRef = useRef<HTMLInputElement>(null);
 
   const [yearsExp, setYearsExp] = useState<string>(driver.years_experience?.toString() ?? "");
@@ -95,7 +104,41 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
     }
   }, [driver.avatar_url]);
 
-  // Fetch truck + stats
+  // Resolve signed previews for driver-docs files
+  useEffect(() => {
+    const paths = [
+      driver.license_front_url,
+      driver.license_back_url,
+      driver.selfie_url,
+      driver.id_card_url,
+      driver.tacho_card_url,
+      driver.adr_certificate_url,
+      driver.intl_passport_url,
+    ].filter(Boolean) as string[];
+    if (!paths.length) {
+      setDocPreviews({});
+      return;
+    }
+    supabase.storage
+      .from("driver-docs")
+      .createSignedUrls(paths, 3600)
+      .then(({ data }) => {
+        const map: Record<string, string> = {};
+        data?.forEach((d, i) => {
+          if (d.signedUrl) map[paths[i]] = d.signedUrl;
+        });
+        setDocPreviews(map);
+      });
+  }, [
+    driver.license_front_url,
+    driver.license_back_url,
+    driver.selfie_url,
+    driver.id_card_url,
+    driver.tacho_card_url,
+    driver.adr_certificate_url,
+    driver.intl_passport_url,
+  ]);
+
   useEffect(() => {
     (async () => {
       if (driver.assigned_truck_id) {
@@ -284,20 +327,24 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
     docKey,
     fileName,
     label,
+    hint,
     accept = "image/*",
     capture = "environment" as const,
   }: {
     docKey: DocKey;
     fileName: string;
     label: string;
+    hint?: string;
     accept?: string;
     capture?: "environment" | "user";
   }) => {
     const url = driver[docKey];
     const isUploading = uploadingDoc === docKey;
+    const previewUrl = url ? docPreviews[url] : null;
     return (
       <div className="space-y-2">
         <Label>{label}</Label>
+        {hint && <p className="text-[11px] text-muted-foreground -mt-1">{hint}</p>}
         <input
           ref={(el) => (docRefs.current[docKey] = el)}
           type="file"
@@ -310,6 +357,15 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
             e.target.value = "";
           }}
         />
+        {previewUrl && (
+          <a href={previewUrl} target="_blank" rel="noreferrer" className="block">
+            <img
+              src={previewUrl}
+              alt={label}
+              className="rounded-md border border-border w-full aspect-[3/2] object-cover"
+            />
+          </a>
+        )}
         <Button
           type="button"
           variant={url ? "outline" : "default"}
@@ -516,6 +572,22 @@ export default function DriverProfileMenu({ driver, onUpdated }: Props) {
                   </span>
                 </div>
               ))}
+            </div>
+
+            <div className="rounded-lg border border-border p-3 space-y-3">
+              <p className="text-sm font-semibold">Посвідчення водія</p>
+              <DocRow
+                docKey="license_front_url"
+                fileName="license_front"
+                label="Фото посвідчення (Передня сторона)"
+                hint="Сфотографуйте передню частину з вашим фото"
+              />
+              <DocRow
+                docKey="license_back_url"
+                fileName="license_back"
+                label="Фото посвідчення (Зворотна сторона)"
+                hint="Сфотографуйте зворотну частину з категоріями"
+              />
             </div>
 
             <DocRow docKey="id_card_url" fileName="id_card" label="Паспорт / ID-картка" />

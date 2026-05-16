@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -26,8 +26,8 @@ const detailsSchema = z.object({
 type PhotoKey = "license_front_url" | "license_back_url" | "selfie_url";
 
 const PHOTO_FIELDS: Array<{ key: PhotoKey; label: string; fileName: string; hint: string }> = [
-  { key: "license_front_url", label: "Лицьовий бік посвідчення", fileName: "license_front", hint: "Фото з боку з фотографією" },
-  { key: "license_back_url", label: "Зворотній бік посвідчення", fileName: "license_back", hint: "Фото з боку з категоріями" },
+  { key: "license_front_url", label: "Фото посвідчення (Передня сторона)", fileName: "license_front", hint: "Сфотографуйте передню частину з вашим фото" },
+  { key: "license_back_url", label: "Фото посвідчення (Зворотна сторона)", fileName: "license_back", hint: "Сфотографуйте зворотну частину з категоріями" },
   { key: "selfie_url", label: "Фото профілю (селфі)", fileName: "selfie", hint: "Чітке фото обличчя" },
 ];
 
@@ -47,6 +47,17 @@ export default function DriverOnboarding({ driver, onUpdated }: Props) {
     license_back_url: null,
     selfie_url: null,
   });
+  const [previews, setPreviews] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const paths = [driver.license_front_url, driver.license_back_url, driver.selfie_url].filter(Boolean) as string[];
+    if (!paths.length) { setPreviews({}); return; }
+    supabase.storage.from("driver-docs").createSignedUrls(paths, 3600).then(({ data }) => {
+      const map: Record<string, string> = {};
+      data?.forEach((d, i) => { if (d.signedUrl) map[paths[i]] = d.signedUrl; });
+      setPreviews(map);
+    });
+  }, [driver.license_front_url, driver.license_back_url, driver.selfie_url]);
 
   const isOnVerification = driver.status === "on_verification";
   const progress = isOnVerification ? 100 : step === 1 ? 33 : step === 2 ? 66 : 100;
@@ -234,6 +245,16 @@ export default function DriverOnboarding({ driver, onUpdated }: Props) {
                     </div>
                     {url && <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />}
                   </div>
+
+                  {url && previews[url] && (
+                    <a href={previews[url]} target="_blank" rel="noreferrer" className="block">
+                      <img
+                        src={previews[url]}
+                        alt={f.label}
+                        className="rounded-md border border-border w-full aspect-[3/2] object-cover"
+                      />
+                    </a>
+                  )}
 
                   <input
                     ref={(el) => (fileInputs.current[f.key] = el)}
