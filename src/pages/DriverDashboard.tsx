@@ -331,6 +331,8 @@ export default function DriverDashboard() {
   }
 
   if (!user) return <Navigate to="/auth" replace />;
+  if (isStaff) return <Navigate to="/admin" replace />;
+  if (!roles.includes("driver")) return <Navigate to="/dashboard" replace />;
 
   if (loading) {
     return (
