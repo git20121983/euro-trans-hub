@@ -4,7 +4,7 @@ import { AdminSidebar } from "@/components/AdminSidebar";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function AdminLayout() {
-  const { user, loading, isStaff } = useAuth();
+  const { user, loading, isStaff, roles } = useAuth();
 
   if (loading) {
     return (
@@ -16,6 +16,11 @@ export default function AdminLayout() {
 
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  if (!isStaff) {
+    if (roles.includes("driver")) return <Navigate to="/driver" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (
