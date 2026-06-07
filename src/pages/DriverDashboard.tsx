@@ -41,7 +41,7 @@ const CUSTOMS_POINTS = [
 ];
 
 export default function DriverDashboard() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, roles, isStaff } = useAuth();
   const [driverRecord, setDriverRecord] = useState<Driver | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
