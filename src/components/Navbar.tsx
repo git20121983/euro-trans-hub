@@ -74,10 +74,10 @@ export default function Navbar() {
           </div>
           <div className="flex flex-col leading-none">
             <span className={`font-display font-extrabold text-lg tracking-tight ${brandText}`}>
-              ETL<span className="text-secondary">.</span>
+              Euro Trans<span className="text-secondary">.</span>
             </span>
             <span className={`text-[10px] uppercase tracking-[0.18em] ${useLight ? "text-white/60" : "text-muted-foreground"}`}>
-              Euro Trans
+              Logistics
             </span>
           </div>
         </Link>
