@@ -76,6 +76,12 @@ export default function Navbar() {
 
         {/* Right cluster */}
         <div className="hidden lg:flex items-center gap-3">
+          <Link to="/admin">
+            <Button size="sm" variant="outline" className="rounded-full border-secondary/60 text-secondary bg-secondary/10 hover:bg-secondary/20 hover:text-secondary">
+              <LayoutDashboard className="w-4 h-4 mr-1.5" />
+              Go to CRM (DEV)
+            </Button>
+          </Link>
           <Link to="/auth">
             <Button size="sm" className="accent-gradient text-secondary-foreground border-0 shadow-md rounded-full px-4">
               <LogIn className="w-4 h-4 mr-1.5" />
