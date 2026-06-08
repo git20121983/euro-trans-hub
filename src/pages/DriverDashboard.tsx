@@ -97,18 +97,29 @@ export default function DriverDashboard() {
           if (payload.eventType === 'INSERT') {
             const newOrder = payload.new as Order;
             setOrders((prev) => [newOrder, ...prev.filter(o => o.id !== newOrder.id)]);
-            toast.info(`🚛 Новий рейс: ${newOrder.origin} → ${newOrder.destination}`, {
-              duration: 8000,
-              description: `Клієнт: ${newOrder.client_name} | ${newOrder.distance} км`,
+            toast.success(`🚛 Вам призначено новий рейс ${newOrder.order_number}!`, {
+              duration: 10000,
+              description: `${newOrder.origin} → ${newOrder.destination} • ${newOrder.distance} км`,
             });
-            if (Notification.permission === 'granted') {
-              new Notification('Euro Trans — Новий рейс', {
-                body: `${newOrder.origin} → ${newOrder.destination}\n${newOrder.client_name}`,
-              });
-            } else if (Notification.permission === 'default') {
-              Notification.requestPermission();
+            if (typeof Notification !== 'undefined') {
+              if (Notification.permission === 'granted') {
+                new Notification('Euro Trans — Новий рейс', {
+                  body: `Вам призначено новий рейс ${newOrder.order_number}!\n${newOrder.origin} → ${newOrder.destination}`,
+                });
+              } else if (Notification.permission === 'default') {
+                Notification.requestPermission();
+              }
             }
           } else if (payload.eventType === 'UPDATE') {
+            const wasAssigned = !payload.old?.driver_id;
+            const nowAssigned = !!(payload.new as Order).driver_id;
+            if (wasAssigned && nowAssigned) {
+              const u = payload.new as Order;
+              toast.success(`🚛 Вам призначено новий рейс ${u.order_number}!`, {
+                duration: 10000,
+                description: `${u.origin} → ${u.destination} • ${u.distance} км`,
+              });
+            }
             const updated = payload.new as Order;
             setOrders((prev) =>
               prev.map((o) => (o.id === updated.id ? updated : o))
@@ -484,12 +495,12 @@ export default function DriverDashboard() {
 
         {/* Orders — only for verified drivers */}
         {!driverRecord.verified_at ? null : orders.length === 0 ? (
-          <div className="text-center py-16 space-y-3">
-            <Package className="w-12 h-12 text-muted-foreground mx-auto" />
-            <h2 className="text-lg font-semibold">Активних рейсів немає</h2>
-            <p className="text-sm text-muted-foreground">
-              Очікуйте призначення від диспетчера
-            </p>
+          <div className="text-center py-20 px-6 space-y-4 rounded-2xl border border-border bg-card/40">
+            <div className="text-5xl">🌴</div>
+            <h2 className="text-lg font-semibold text-foreground">
+              У вас немає активних рейсів на сьогодні.
+            </h2>
+            <p className="text-sm text-muted-foreground">Відпочивайте!</p>
           </div>
         ) : (
           orders.map((order) => {
@@ -545,6 +556,30 @@ export default function DriverDashboard() {
                       </>
                     )}
                   </div>
+
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(order.origin)}&destination=${encodeURIComponent(order.destination)}&travelmode=driving`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 flex items-center justify-center gap-2 text-xs font-medium text-secondary hover:underline py-2 rounded-lg bg-secondary/10 border border-secondary/20"
+                  >
+                    <Navigation className="w-3.5 h-3.5" />
+                    Відкрити маршрут у Google Maps
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+
+                  {order.client_phone && (
+                    <p className="text-xs text-muted-foreground pt-1">
+                      📞 Клієнт: <a href={`tel:${order.client_phone}`} className="text-foreground hover:underline">{order.client_phone}</a>
+                    </p>
+                  )}
+
+                  {order.notes && (
+                    <div className="mt-2 p-2 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                      <p className="text-[10px] font-semibold text-amber-300 uppercase tracking-wider mb-1">Примітки</p>
+                      <p className="text-xs text-foreground/90 whitespace-pre-wrap">{order.notes}</p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="px-4 py-2 border-t border-border">
