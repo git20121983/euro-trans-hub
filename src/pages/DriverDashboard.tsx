@@ -556,6 +556,30 @@ export default function DriverDashboard() {
                       </>
                     )}
                   </div>
+
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(order.origin)}&destination=${encodeURIComponent(order.destination)}&travelmode=driving`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 flex items-center justify-center gap-2 text-xs font-medium text-secondary hover:underline py-2 rounded-lg bg-secondary/10 border border-secondary/20"
+                  >
+                    <Navigation className="w-3.5 h-3.5" />
+                    Відкрити маршрут у Google Maps
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+
+                  {order.client_phone && (
+                    <p className="text-xs text-muted-foreground pt-1">
+                      📞 Клієнт: <a href={`tel:${order.client_phone}`} className="text-foreground hover:underline">{order.client_phone}</a>
+                    </p>
+                  )}
+
+                  {order.notes && (
+                    <div className="mt-2 p-2 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                      <p className="text-[10px] font-semibold text-amber-300 uppercase tracking-wider mb-1">Примітки</p>
+                      <p className="text-xs text-foreground/90 whitespace-pre-wrap">{order.notes}</p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="px-4 py-2 border-t border-border">
