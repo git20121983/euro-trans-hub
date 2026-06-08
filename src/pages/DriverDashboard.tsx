@@ -97,18 +97,29 @@ export default function DriverDashboard() {
           if (payload.eventType === 'INSERT') {
             const newOrder = payload.new as Order;
             setOrders((prev) => [newOrder, ...prev.filter(o => o.id !== newOrder.id)]);
-            toast.info(`🚛 Новий рейс: ${newOrder.origin} → ${newOrder.destination}`, {
-              duration: 8000,
-              description: `Клієнт: ${newOrder.client_name} | ${newOrder.distance} км`,
+            toast.success(`🚛 Вам призначено новий рейс ${newOrder.order_number}!`, {
+              duration: 10000,
+              description: `${newOrder.origin} → ${newOrder.destination} • ${newOrder.distance} км`,
             });
-            if (Notification.permission === 'granted') {
-              new Notification('Euro Trans — Новий рейс', {
-                body: `${newOrder.origin} → ${newOrder.destination}\n${newOrder.client_name}`,
-              });
-            } else if (Notification.permission === 'default') {
-              Notification.requestPermission();
+            if (typeof Notification !== 'undefined') {
+              if (Notification.permission === 'granted') {
+                new Notification('Euro Trans — Новий рейс', {
+                  body: `Вам призначено новий рейс ${newOrder.order_number}!\n${newOrder.origin} → ${newOrder.destination}`,
+                });
+              } else if (Notification.permission === 'default') {
+                Notification.requestPermission();
+              }
             }
           } else if (payload.eventType === 'UPDATE') {
+            const wasAssigned = !payload.old?.driver_id;
+            const nowAssigned = !!(payload.new as Order).driver_id;
+            if (wasAssigned && nowAssigned) {
+              const u = payload.new as Order;
+              toast.success(`🚛 Вам призначено новий рейс ${u.order_number}!`, {
+                duration: 10000,
+                description: `${u.origin} → ${u.destination} • ${u.distance} км`,
+              });
+            }
             const updated = payload.new as Order;
             setOrders((prev) =>
               prev.map((o) => (o.id === updated.id ? updated : o))
