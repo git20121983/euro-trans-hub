@@ -15,12 +15,12 @@ export default function AdminLayout() {
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   if (!isStaff) {
     if (roles.includes("driver")) return <Navigate to="/driver" replace />;
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return (

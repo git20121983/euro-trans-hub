@@ -33,12 +33,12 @@ export default function AuthPage() {
             .select("role")
             .eq("user_id", data.user.id);
           const roleList = roles?.map((r) => r.role) ?? [];
-          if (roleList.includes("driver") && !roleList.includes("admin") && !roleList.includes("manager")) {
-            navigate("/driver");
-          } else if (roleList.includes("admin") || roleList.includes("manager")) {
+          if (roleList.includes("admin") || roleList.includes("manager")) {
             navigate("/admin");
+          } else if (roleList.includes("driver")) {
+            navigate("/driver");
           } else {
-            navigate("/dashboard");
+            navigate("/");
           }
         }
       }
