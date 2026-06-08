@@ -120,6 +120,12 @@ export default function Navbar() {
                 {item.label}
               </Link>
             ))}
+            <Link to="/admin" onClick={() => setOpen(false)}>
+              <Button size="sm" variant="outline" className="w-full mt-2 rounded-full border-secondary/60 text-secondary bg-secondary/10 hover:bg-secondary/20 hover:text-secondary">
+                <LayoutDashboard className="w-4 h-4 mr-1.5" />
+                Go to CRM (DEV)
+              </Button>
+            </Link>
             <Link to="/auth" onClick={() => setOpen(false)}>
               <Button size="sm" className="w-full mt-2 accent-gradient text-secondary-foreground border-0 rounded-full">
                 <LogIn className="w-4 h-4 mr-1.5" />
