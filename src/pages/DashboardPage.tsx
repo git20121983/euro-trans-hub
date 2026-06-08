@@ -18,15 +18,15 @@ const statusColor: Record<string, string> = {
 export default function DashboardPage() {
   return (
     <div className="pt-20">
-      <section className="hero-gradient py-12 px-4 sm:px-6 lg:px-8">
+      <section className="py-12 px-4 sm:px-6 lg:px-8 border-b border-white/10">
         <div className="container-custom">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full bg-secondary/20 flex items-center justify-center">
               <User className="w-7 h-7 text-secondary" />
             </div>
             <div>
-              <h1 className="font-display text-2xl sm:text-3xl font-bold text-primary-foreground">Особистий кабінет</h1>
-              <p className="text-primary-foreground/70 text-sm">Вітаємо! Тут ви можете керувати замовленнями.</p>
+              <h1 className="font-display text-2xl sm:text-3xl font-bold text-white">Особистий кабінет</h1>
+              <p className="text-slate-300 text-sm">Вітаємо! Тут ви можете керувати замовленнями.</p>
             </div>
           </div>
         </div>
