@@ -495,12 +495,12 @@ export default function DriverDashboard() {
 
         {/* Orders — only for verified drivers */}
         {!driverRecord.verified_at ? null : orders.length === 0 ? (
-          <div className="text-center py-16 space-y-3">
-            <Package className="w-12 h-12 text-muted-foreground mx-auto" />
-            <h2 className="text-lg font-semibold">Активних рейсів немає</h2>
-            <p className="text-sm text-muted-foreground">
-              Очікуйте призначення від диспетчера
-            </p>
+          <div className="text-center py-20 px-6 space-y-4 rounded-2xl border border-border bg-card/40">
+            <div className="text-5xl">🌴</div>
+            <h2 className="text-lg font-semibold text-foreground">
+              У вас немає активних рейсів на сьогодні.
+            </h2>
+            <p className="text-sm text-muted-foreground">Відпочивайте!</p>
           </div>
         ) : (
           orders.map((order) => {
