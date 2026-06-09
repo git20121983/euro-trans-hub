@@ -61,7 +61,7 @@ export default function DriverDashboard() {
 
     setDriverRecord(driver ?? null);
 
-    if (driver && !["pending_details", "on_verification"].includes(driver.status)) {
+    if (driver) {
       const { data: driverOrders } = await supabase
         .from("orders")
         .select("*")
