@@ -49,6 +49,7 @@ export default function DriverDashboard() {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const fetchDriverData = useCallback(async (userId: string) => {
     setLoading(true);
