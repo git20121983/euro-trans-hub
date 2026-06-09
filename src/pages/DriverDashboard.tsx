@@ -376,7 +376,6 @@ export default function DriverDashboard() {
     driverRecord.status === "pending_details" ||
     driverRecord.status === "on_verification";
 
-  const [showOnboarding, setShowOnboarding] = useState(false);
   if (showOnboarding) {
     return <DriverOnboarding driver={driverRecord} onUpdated={(d) => { setDriverRecord(d); if (d.status === "available") setShowOnboarding(false); }} />;
   }
