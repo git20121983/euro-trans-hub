@@ -509,13 +509,6 @@ export default function DriverDashboard() {
             </h2>
             <p className="text-sm text-muted-foreground">Відпочивайте!</p>
           </div>
-          <div className="text-center py-20 px-6 space-y-4 rounded-2xl border border-border bg-card/40">
-            <div className="text-5xl">🌴</div>
-            <h2 className="text-lg font-semibold text-foreground">
-              У вас немає активних рейсів на сьогодні.
-            </h2>
-            <p className="text-sm text-muted-foreground">Відпочивайте!</p>
-          </div>
         ) : (
           orders.map((order) => {
             const nextStatus = getNextStatus(order.status);
