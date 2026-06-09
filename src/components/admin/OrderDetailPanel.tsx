@@ -9,11 +9,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
+  AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   Clock, FileText, Upload, MapPin, User, Phone,
   Package, Truck, Loader2, Download, File, DollarSign,
-  Fuel, AlertTriangle
+  Fuel, AlertTriangle, Trash2, Save,
 } from "lucide-react";
 import { toast } from "sonner";
+
+interface DriverOption {
+  id: string;
+  full_name: string;
+}
 
 type Order = Tables<"orders">;
 
@@ -64,14 +77,29 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
   const [actualFuelCost, setActualFuelCost] = useState("");
   const [tollCost, setTollCost] = useState("");
   const [savingFinance, setSavingFinance] = useState(false);
+  const [drivers, setDrivers] = useState<DriverOption[]>([]);
+  const [selectedDriverId, setSelectedDriverId] = useState<string>("none");
+  const [savingDriver, setSavingDriver] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!order || !open) return;
     fetchEvents();
     fetchFiles();
+    fetchDrivers();
     setActualFuelCost(order.actual_fuel_cost?.toString() ?? "");
     setTollCost(order.toll_cost?.toString() ?? "0");
+    setSelectedDriverId(order.driver_id ?? "none");
   }, [order?.id, open]);
+
+  const fetchDrivers = async () => {
+    const { data } = await supabase
+      .from("drivers")
+      .select("id, full_name")
+      .order("full_name", { ascending: true });
+    setDrivers((data as DriverOption[]) ?? []);
+  };
+
 
   const fetchEvents = async () => {
     if (!order) return;
@@ -175,7 +203,48 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
     setSavingFinance(false);
   };
 
+  const saveDriverAssignment = async () => {
+    if (!order) return;
+    setSavingDriver(true);
+    const newDriverId = selectedDriverId === "none" ? null : selectedDriverId;
+    const { error } = await supabase
+      .from("orders")
+      .update({ driver_id: newDriverId })
+      .eq("id", order.id);
+    if (error) {
+      toast.error("Помилка зміни водія");
+    } else {
+      const name = newDriverId
+        ? drivers.find((d) => d.id === newDriverId)?.full_name ?? "—"
+        : "Не призначено";
+      toast.success(`Водія оновлено: ${name}`);
+      await supabase.from("order_events").insert({
+        order_id: order.id,
+        event_type: "driver_change",
+        description: `Водій змінено: ${name}`,
+      });
+      onOrderUpdate?.();
+    }
+    setSavingDriver(false);
+  };
+
+  const deleteOrder = async () => {
+    if (!order) return;
+    setDeleting(true);
+    const { error } = await supabase.from("orders").delete().eq("id", order.id);
+    if (error) {
+      toast.error("Помилка видалення рейсу");
+      setDeleting(false);
+    } else {
+      toast.success(`Рейс ${order.order_number} видалено`);
+      setDeleting(false);
+      onOpenChange(false);
+      onOrderUpdate?.();
+    }
+  };
+
   const statusInfo = order ? STATUS_LABELS[order.status] ?? { label: order.status, color: "bg-muted" } : null;
+
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -261,22 +330,80 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
 
               {/* Details */}
               <TabsContent value="details" className="mt-4 space-y-3">
+                {/* Editable driver assignment */}
+                <div className="p-3 rounded-lg bg-muted/20 border border-border space-y-2">
+                  <Label className="text-[10px] text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                    <User className="w-3 h-3" /> Водій
+                  </Label>
+                  <div className="flex gap-2">
+                    <Select value={selectedDriverId} onValueChange={setSelectedDriverId}>
+                      <SelectTrigger className="flex-1 bg-background text-foreground">
+                        <SelectValue placeholder="Оберіть водія" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Не призначено</SelectItem>
+                        {drivers.map((d) => (
+                          <SelectItem key={d.id} value={d.id}>{d.full_name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      size="sm"
+                      onClick={saveDriverAssignment}
+                      disabled={savingDriver || selectedDriverId === (order.driver_id ?? "none")}
+                      className="gap-1"
+                    >
+                      {savingDriver ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                      Зберегти
+                    </Button>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { label: "Тип вантажу", value: order.cargo_type },
                     { label: "Вага", value: order.cargo_weight ? `${order.cargo_weight} т` : "—" },
                     { label: "Відстань", value: `${order.distance} км` },
-                    { label: "Водій", value: driverName ?? "Не призначено" },
                     { label: "Авто", value: truckPlate ?? "Не призначено" },
                     { label: "Створено", value: formatDate(order.created_at) },
                   ].map((item) => (
                     <div key={item.label} className="p-2 rounded-lg bg-muted/20 border border-border">
                       <p className="text-[10px] text-muted-foreground uppercase">{item.label}</p>
-                      <p className="text-sm font-medium mt-0.5">{item.value}</p>
+                      <p className="text-sm font-medium mt-0.5 text-foreground">{item.value}</p>
                     </div>
                   ))}
                 </div>
+
+                {/* Danger zone */}
+                <div className="pt-3 mt-3 border-t border-border">
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" className="w-full gap-2" disabled={deleting}>
+                        <Trash2 className="w-4 h-4" />
+                        {deleting ? "Видалення..." : "Видалити рейс"}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Видалити рейс?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Ви впевнені, що хочете видалити рейс {order.order_number}? Цю дію неможливо скасувати.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Скасувати</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={deleteOrder}
+                          className="bg-red-500 hover:bg-red-600 text-white"
+                        >
+                          Видалити
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </TabsContent>
+
 
               {/* Timeline */}
               <TabsContent value="timeline" className="mt-4">
