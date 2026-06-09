@@ -370,8 +370,14 @@ export default function DriverDashboard() {
     );
   }
 
-  if (driverRecord.status === "pending_details" || driverRecord.status === "on_verification") {
-    return <DriverOnboarding driver={driverRecord} onUpdated={setDriverRecord} />;
+  const needsVerification =
+    !driverRecord.verified_at ||
+    driverRecord.status === "pending_details" ||
+    driverRecord.status === "on_verification";
+
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  if (showOnboarding) {
+    return <DriverOnboarding driver={driverRecord} onUpdated={(d) => { setDriverRecord(d); if (d.status === "available") setShowOnboarding(false); }} />;
   }
 
   const getNextStatus = (current: string) => {
