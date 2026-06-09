@@ -9,11 +9,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
+  AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   Clock, FileText, Upload, MapPin, User, Phone,
   Package, Truck, Loader2, Download, File, DollarSign,
-  Fuel, AlertTriangle
+  Fuel, AlertTriangle, Trash2, Save,
 } from "lucide-react";
 import { toast } from "sonner";
+
+interface DriverOption {
+  id: string;
+  full_name: string;
+}
 
 type Order = Tables<"orders">;
 
