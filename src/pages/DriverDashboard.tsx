@@ -49,6 +49,7 @@ export default function DriverDashboard() {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const fetchDriverData = useCallback(async (userId: string) => {
     setLoading(true);
@@ -61,7 +62,7 @@ export default function DriverDashboard() {
 
     setDriverRecord(driver ?? null);
 
-    if (driver && !["pending_details", "on_verification"].includes(driver.status)) {
+    if (driver) {
       const { data: driverOrders } = await supabase
         .from("orders")
         .select("*")
@@ -370,8 +371,13 @@ export default function DriverDashboard() {
     );
   }
 
-  if (driverRecord.status === "pending_details" || driverRecord.status === "on_verification") {
-    return <DriverOnboarding driver={driverRecord} onUpdated={setDriverRecord} />;
+  const needsVerification =
+    !driverRecord.verified_at ||
+    driverRecord.status === "pending_details" ||
+    driverRecord.status === "on_verification";
+
+  if (showOnboarding) {
+    return <DriverOnboarding driver={driverRecord} onUpdated={(d) => { setDriverRecord(d); if (d.status === "available") setShowOnboarding(false); }} />;
   }
 
   const getNextStatus = (current: string) => {
@@ -480,21 +486,22 @@ export default function DriverDashboard() {
           </div>
         )}
 
-        {/* Verification gate */}
-        {!driverRecord.verified_at && (
-          <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 flex items-start gap-3">
-            <Shield className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-            <div className="text-sm">
-              <p className="font-semibold text-amber-200">Доступ до рейсів обмежено</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Завершіть верифікацію профілю, щоб отримувати та приймати нові рейси. Натисніть на аватар угорі.
-              </p>
-            </div>
-          </div>
+        {/* Non-blocking verification banner */}
+        {needsVerification && (
+          <button
+            onClick={() => setShowOnboarding(true)}
+            className="w-full rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2 flex items-center gap-2 text-left hover:bg-amber-500/10 transition"
+          >
+            <Shield className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="text-xs text-amber-200 flex-1">
+              Профіль не верифіковано. Завершіть заповнення, щоб отримати повний доступ.
+            </span>
+            <ChevronRight className="w-4 h-4 text-amber-400 shrink-0" />
+          </button>
         )}
 
-        {/* Orders — only for verified drivers */}
-        {!driverRecord.verified_at ? null : orders.length === 0 ? (
+        {/* Orders — visible regardless of verification status */}
+        {orders.length === 0 ? (
           <div className="text-center py-20 px-6 space-y-4 rounded-2xl border border-border bg-card/40">
             <div className="text-5xl">🌴</div>
             <h2 className="text-lg font-semibold text-foreground">
