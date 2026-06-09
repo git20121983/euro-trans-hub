@@ -203,7 +203,48 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
     setSavingFinance(false);
   };
 
+  const saveDriverAssignment = async () => {
+    if (!order) return;
+    setSavingDriver(true);
+    const newDriverId = selectedDriverId === "none" ? null : selectedDriverId;
+    const { error } = await supabase
+      .from("orders")
+      .update({ driver_id: newDriverId })
+      .eq("id", order.id);
+    if (error) {
+      toast.error("Помилка зміни водія");
+    } else {
+      const name = newDriverId
+        ? drivers.find((d) => d.id === newDriverId)?.full_name ?? "—"
+        : "Не призначено";
+      toast.success(`Водія оновлено: ${name}`);
+      await supabase.from("order_events").insert({
+        order_id: order.id,
+        event_type: "driver_change",
+        description: `Водій змінено: ${name}`,
+      });
+      onOrderUpdate?.();
+    }
+    setSavingDriver(false);
+  };
+
+  const deleteOrder = async () => {
+    if (!order) return;
+    setDeleting(true);
+    const { error } = await supabase.from("orders").delete().eq("id", order.id);
+    if (error) {
+      toast.error("Помилка видалення рейсу");
+      setDeleting(false);
+    } else {
+      toast.success(`Рейс ${order.order_number} видалено`);
+      setDeleting(false);
+      onOpenChange(false);
+      onOrderUpdate?.();
+    }
+  };
+
   const statusInfo = order ? STATUS_LABELS[order.status] ?? { label: order.status, color: "bg-muted" } : null;
+
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
