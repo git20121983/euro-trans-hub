@@ -330,22 +330,80 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
 
               {/* Details */}
               <TabsContent value="details" className="mt-4 space-y-3">
+                {/* Editable driver assignment */}
+                <div className="p-3 rounded-lg bg-muted/20 border border-border space-y-2">
+                  <Label className="text-[10px] text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                    <User className="w-3 h-3" /> Водій
+                  </Label>
+                  <div className="flex gap-2">
+                    <Select value={selectedDriverId} onValueChange={setSelectedDriverId}>
+                      <SelectTrigger className="flex-1 bg-background text-foreground">
+                        <SelectValue placeholder="Оберіть водія" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Не призначено</SelectItem>
+                        {drivers.map((d) => (
+                          <SelectItem key={d.id} value={d.id}>{d.full_name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      size="sm"
+                      onClick={saveDriverAssignment}
+                      disabled={savingDriver || selectedDriverId === (order.driver_id ?? "none")}
+                      className="gap-1"
+                    >
+                      {savingDriver ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                      Зберегти
+                    </Button>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { label: "Тип вантажу", value: order.cargo_type },
                     { label: "Вага", value: order.cargo_weight ? `${order.cargo_weight} т` : "—" },
                     { label: "Відстань", value: `${order.distance} км` },
-                    { label: "Водій", value: driverName ?? "Не призначено" },
                     { label: "Авто", value: truckPlate ?? "Не призначено" },
                     { label: "Створено", value: formatDate(order.created_at) },
                   ].map((item) => (
                     <div key={item.label} className="p-2 rounded-lg bg-muted/20 border border-border">
                       <p className="text-[10px] text-muted-foreground uppercase">{item.label}</p>
-                      <p className="text-sm font-medium mt-0.5">{item.value}</p>
+                      <p className="text-sm font-medium mt-0.5 text-foreground">{item.value}</p>
                     </div>
                   ))}
                 </div>
+
+                {/* Danger zone */}
+                <div className="pt-3 mt-3 border-t border-border">
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" className="w-full gap-2" disabled={deleting}>
+                        <Trash2 className="w-4 h-4" />
+                        {deleting ? "Видалення..." : "Видалити рейс"}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Видалити рейс?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Ви впевнені, що хочете видалити рейс {order.order_number}? Цю дію неможливо скасувати.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Скасувати</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={deleteOrder}
+                          className="bg-red-500 hover:bg-red-600 text-white"
+                        >
+                          Видалити
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </TabsContent>
+
 
               {/* Timeline */}
               <TabsContent value="timeline" className="mt-4">
