@@ -77,14 +77,29 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
   const [actualFuelCost, setActualFuelCost] = useState("");
   const [tollCost, setTollCost] = useState("");
   const [savingFinance, setSavingFinance] = useState(false);
+  const [drivers, setDrivers] = useState<DriverOption[]>([]);
+  const [selectedDriverId, setSelectedDriverId] = useState<string>("none");
+  const [savingDriver, setSavingDriver] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!order || !open) return;
     fetchEvents();
     fetchFiles();
+    fetchDrivers();
     setActualFuelCost(order.actual_fuel_cost?.toString() ?? "");
     setTollCost(order.toll_cost?.toString() ?? "0");
+    setSelectedDriverId(order.driver_id ?? "none");
   }, [order?.id, open]);
+
+  const fetchDrivers = async () => {
+    const { data } = await supabase
+      .from("drivers")
+      .select("id, full_name")
+      .order("full_name", { ascending: true });
+    setDrivers((data as DriverOption[]) ?? []);
+  };
+
 
   const fetchEvents = async () => {
     if (!order) return;
