@@ -221,6 +221,9 @@ export default function AdminDrivers() {
                         <Button size="sm" variant="outline" onClick={() => { setDocsTab("documents"); setVerifying(driver); }}>
                           <FolderOpen className="w-3.5 h-3.5 mr-1.5" /> Документи
                         </Button>
+                        <Button size="sm" variant="outline" onClick={() => { setDocsTab("finance"); setVerifying(driver); }}>
+                          <Wallet className="w-3.5 h-3.5 mr-1.5" /> Витрати
+                        </Button>
                         {needsVerify && (
                           <Button size="sm" onClick={() => { setDocsTab("overview"); setVerifying(driver); }} className="bg-amber-600 hover:bg-amber-700">
                             <ShieldCheck className="w-3.5 h-3.5 mr-1.5" /> Перевірити
