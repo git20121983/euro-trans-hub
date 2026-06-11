@@ -92,6 +92,7 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
     fetchDrivers();
     setActualFuelCost(order.actual_fuel_cost?.toString() ?? "");
     setTollCost(order.toll_cost?.toString() ?? "0");
+    setAllowanceAmount(((order as unknown as { allowance_amount?: number }).allowance_amount ?? 0).toString());
     setSelectedDriverId(order.driver_id ?? "none");
   }, [order?.id, open]);
 
