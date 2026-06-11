@@ -39,7 +39,7 @@ export default function AdminDrivers() {
   const [trucks, setTrucks] = useState<Tables<"trucks">[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [verifying, setVerifying] = useState<Driver | null>(null);
-  const [docsTab, setDocsTab] = useState<"overview" | "documents">("overview");
+  const [docsTab, setDocsTab] = useState<"overview" | "documents" | "finance">("overview");
   const isMobile = useIsMobile();
 
   const loadData = useCallback(() => {
