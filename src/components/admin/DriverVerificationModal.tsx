@@ -22,7 +22,9 @@ import {
   Send,
   Copy,
   FileWarning,
+  Wallet,
 } from "lucide-react";
+import DriverFinancePanel from "./DriverFinancePanel";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Driver = Tables<"drivers">;
@@ -32,7 +34,7 @@ interface Props {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   onActioned: () => void;
-  initialTab?: "overview" | "documents";
+  initialTab?: "overview" | "documents" | "finance";
 }
 
 type DocDef = {
@@ -161,7 +163,7 @@ export default function DriverVerificationModal({ driver, open, onOpenChange, on
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{driver.full_name}</DialogTitle>
           <DialogDescription>Перевірка профілю та керування документами</DialogDescription>
@@ -169,9 +171,10 @@ export default function DriverVerificationModal({ driver, open, onOpenChange, on
 
         <TooltipProvider delayDuration={200}>
         <Tabs defaultValue={initialTab} className="w-full">
-          <TabsList className="grid grid-cols-2 w-full">
+          <TabsList className="grid grid-cols-3 w-full">
             <TabsTrigger value="overview">Огляд</TabsTrigger>
             <TabsTrigger value="documents">Документи</TabsTrigger>
+            <TabsTrigger value="finance"><Wallet className="w-3.5 h-3.5 mr-1" /> Витрати</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4 mt-4">
@@ -255,6 +258,10 @@ export default function DriverVerificationModal({ driver, open, onOpenChange, on
                 </div>
               ))}
             </div>
+          </TabsContent>
+
+          <TabsContent value="finance" className="mt-4">
+            <DriverFinancePanel driverId={driver.id} driverName={driver.full_name} />
           </TabsContent>
         </Tabs>
         </TooltipProvider>

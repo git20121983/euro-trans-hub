@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Phone, Truck, Plus, ShieldCheck, Clock, AlertCircle, FolderOpen } from "lucide-react";
+import { Users, Phone, Truck, Plus, ShieldCheck, Clock, AlertCircle, FolderOpen, Wallet } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -39,7 +39,7 @@ export default function AdminDrivers() {
   const [trucks, setTrucks] = useState<Tables<"trucks">[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [verifying, setVerifying] = useState<Driver | null>(null);
-  const [docsTab, setDocsTab] = useState<"overview" | "documents">("overview");
+  const [docsTab, setDocsTab] = useState<"overview" | "documents" | "finance">("overview");
   const isMobile = useIsMobile();
 
   const loadData = useCallback(() => {
@@ -153,9 +153,12 @@ export default function AdminDrivers() {
                     {truck.plate_number} ({truck.model})
                   </div>
                 )}
-                <div className="flex gap-2 mt-2">
+                <div className="flex gap-2 mt-2 flex-wrap">
                   <Button size="sm" variant="outline" onClick={() => { setDocsTab("documents"); setVerifying(driver); }} className="flex-1">
                     <FolderOpen className="w-4 h-4 mr-1.5" /> Документи
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => { setDocsTab("finance"); setVerifying(driver); }} className="flex-1">
+                    <Wallet className="w-4 h-4 mr-1.5" /> Витрати
                   </Button>
                   {needsVerify && (
                     <Button size="sm" onClick={() => { setDocsTab("overview"); setVerifying(driver); }} className="flex-1 bg-amber-600 hover:bg-amber-700">
@@ -217,6 +220,9 @@ export default function AdminDrivers() {
                       <div className="flex justify-end gap-2">
                         <Button size="sm" variant="outline" onClick={() => { setDocsTab("documents"); setVerifying(driver); }}>
                           <FolderOpen className="w-3.5 h-3.5 mr-1.5" /> Документи
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => { setDocsTab("finance"); setVerifying(driver); }}>
+                          <Wallet className="w-3.5 h-3.5 mr-1.5" /> Витрати
                         </Button>
                         {needsVerify && (
                           <Button size="sm" onClick={() => { setDocsTab("overview"); setVerifying(driver); }} className="bg-amber-600 hover:bg-amber-700">
