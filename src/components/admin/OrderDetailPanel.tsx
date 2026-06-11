@@ -526,6 +526,39 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
 
               {/* Finance */}
               <TabsContent value="finance" className="mt-4 space-y-4">
+                {/* Driver allowance */}
+                <div className="space-y-2 p-3 rounded-lg border border-border bg-muted/10">
+                  <Label className="text-xs flex items-center gap-1.5 text-muted-foreground uppercase tracking-wider">
+                    <Wallet className="w-3 h-3" /> Видано аванс водію, ₴
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      value={allowanceAmount}
+                      onChange={(e) => setAllowanceAmount(e.target.value)}
+                      placeholder="0"
+                    />
+                    <Button size="sm" onClick={saveAllowance} disabled={savingAllowance} className="gap-1">
+                      {savingAllowance ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                      Зберегти
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Trip expenses */}
+                <div className="pt-3 border-t border-border">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                    Дорожні витрати
+                  </p>
+                  <ExpensesPanel
+                    orderId={order.id}
+                    driverId={order.driver_id}
+                    allowance={parseFloat(allowanceAmount || "0")}
+                    canAdd
+                  />
+                </div>
+
                 <div className="space-y-2">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Планові витрати
