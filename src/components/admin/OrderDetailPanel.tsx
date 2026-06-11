@@ -77,6 +77,8 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
   const [uploading, setUploading] = useState(false);
   const [actualFuelCost, setActualFuelCost] = useState("");
   const [tollCost, setTollCost] = useState("");
+  const [allowanceAmount, setAllowanceAmount] = useState("");
+  const [savingAllowance, setSavingAllowance] = useState(false);
   const [savingFinance, setSavingFinance] = useState(false);
   const [drivers, setDrivers] = useState<DriverOption[]>([]);
   const [selectedDriverId, setSelectedDriverId] = useState<string>("none");
