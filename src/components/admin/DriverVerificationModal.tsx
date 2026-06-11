@@ -22,7 +22,9 @@ import {
   Send,
   Copy,
   FileWarning,
+  Wallet,
 } from "lucide-react";
+import DriverFinancePanel from "./DriverFinancePanel";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Driver = Tables<"drivers">;
