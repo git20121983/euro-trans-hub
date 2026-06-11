@@ -124,6 +124,64 @@ export type Database = {
           },
         ]
       }
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          driver_id: string | null
+          id: string
+          order_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          driver_id?: string | null
+          id?: string
+          order_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          driver_id?: string | null
+          id?: string
+          order_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_finance"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoices: {
         Row: {
           amount: number
@@ -229,6 +287,7 @@ export type Database = {
       orders: {
         Row: {
           actual_fuel_cost: number | null
+          allowance_amount: number
           cargo_type: string
           cargo_weight: number | null
           client_name: string
@@ -263,6 +322,7 @@ export type Database = {
         }
         Insert: {
           actual_fuel_cost?: number | null
+          allowance_amount?: number
           cargo_type?: string
           cargo_weight?: number | null
           client_name: string
@@ -297,6 +357,7 @@ export type Database = {
         }
         Update: {
           actual_fuel_cost?: number | null
+          allowance_amount?: number
           cargo_type?: string
           cargo_weight?: number | null
           client_name?: string

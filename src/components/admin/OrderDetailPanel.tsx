@@ -19,9 +19,10 @@ import {
 import {
   Clock, FileText, Upload, MapPin, User, Phone,
   Package, Truck, Loader2, Download, File, DollarSign,
-  Fuel, AlertTriangle, Trash2, Save,
+  Fuel, AlertTriangle, Trash2, Save, Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
+import ExpensesPanel from "@/components/expenses/ExpensesPanel";
 
 interface DriverOption {
   id: string;
@@ -76,6 +77,8 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
   const [uploading, setUploading] = useState(false);
   const [actualFuelCost, setActualFuelCost] = useState("");
   const [tollCost, setTollCost] = useState("");
+  const [allowanceAmount, setAllowanceAmount] = useState("");
+  const [savingAllowance, setSavingAllowance] = useState(false);
   const [savingFinance, setSavingFinance] = useState(false);
   const [drivers, setDrivers] = useState<DriverOption[]>([]);
   const [selectedDriverId, setSelectedDriverId] = useState<string>("none");
@@ -89,6 +92,7 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
     fetchDrivers();
     setActualFuelCost(order.actual_fuel_cost?.toString() ?? "");
     setTollCost(order.toll_cost?.toString() ?? "0");
+    setAllowanceAmount(((order as unknown as { allowance_amount?: number }).allowance_amount ?? 0).toString());
     setSelectedDriverId(order.driver_id ?? "none");
   }, [order?.id, open]);
 
@@ -201,6 +205,22 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
       onOrderUpdate?.();
     }
     setSavingFinance(false);
+  };
+
+  const saveAllowance = async () => {
+    if (!order) return;
+    setSavingAllowance(true);
+    const value = allowanceAmount ? parseFloat(allowanceAmount) : 0;
+    const { error } = await supabase
+      .from("orders")
+      .update({ allowance_amount: value } as never)
+      .eq("id", order.id);
+    if (error) toast.error("Помилка збереження авансу");
+    else {
+      toast.success("Аванс збережено");
+      onOrderUpdate?.();
+    }
+    setSavingAllowance(false);
   };
 
   const saveDriverAssignment = async () => {
@@ -506,6 +526,39 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
 
               {/* Finance */}
               <TabsContent value="finance" className="mt-4 space-y-4">
+                {/* Driver allowance */}
+                <div className="space-y-2 p-3 rounded-lg border border-border bg-muted/10">
+                  <Label className="text-xs flex items-center gap-1.5 text-muted-foreground uppercase tracking-wider">
+                    <Wallet className="w-3 h-3" /> Видано аванс водію, ₴
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      value={allowanceAmount}
+                      onChange={(e) => setAllowanceAmount(e.target.value)}
+                      placeholder="0"
+                    />
+                    <Button size="sm" onClick={saveAllowance} disabled={savingAllowance} className="gap-1">
+                      {savingAllowance ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                      Зберегти
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Trip expenses */}
+                <div className="pt-3 border-t border-border">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                    Дорожні витрати
+                  </p>
+                  <ExpensesPanel
+                    orderId={order.id}
+                    driverId={order.driver_id}
+                    allowance={parseFloat(allowanceAmount || "0")}
+                    canAdd
+                  />
+                </div>
+
                 <div className="space-y-2">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Планові витрати
