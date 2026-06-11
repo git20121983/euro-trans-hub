@@ -19,9 +19,10 @@ import {
 import {
   Clock, FileText, Upload, MapPin, User, Phone,
   Package, Truck, Loader2, Download, File, DollarSign,
-  Fuel, AlertTriangle, Trash2, Save,
+  Fuel, AlertTriangle, Trash2, Save, Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
+import ExpensesPanel from "@/components/expenses/ExpensesPanel";
 
 interface DriverOption {
   id: string;
