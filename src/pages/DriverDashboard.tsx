@@ -588,7 +588,22 @@ export default function DriverDashboard() {
                       <p className="text-xs text-foreground/90 whitespace-pre-wrap">{order.notes}</p>
                     </div>
                   )}
+
+                  {/* Trip expenses */}
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                      💵 Аванс на витрати
+                    </p>
+                    <ExpensesPanel
+                      orderId={order.id}
+                      driverId={driverRecord.id}
+                      allowance={Number((order as unknown as { allowance_amount?: number }).allowance_amount ?? 0)}
+                      canAdd
+                      compact
+                    />
+                  </div>
                 </div>
+
 
                 <div className="px-4 py-2 border-t border-border">
                   <div className="flex items-center gap-1">
