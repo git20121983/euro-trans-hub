@@ -207,6 +207,22 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
     setSavingFinance(false);
   };
 
+  const saveAllowance = async () => {
+    if (!order) return;
+    setSavingAllowance(true);
+    const value = allowanceAmount ? parseFloat(allowanceAmount) : 0;
+    const { error } = await supabase
+      .from("orders")
+      .update({ allowance_amount: value } as never)
+      .eq("id", order.id);
+    if (error) toast.error("Помилка збереження авансу");
+    else {
+      toast.success("Аванс збережено");
+      onOrderUpdate?.();
+    }
+    setSavingAllowance(false);
+  };
+
   const saveDriverAssignment = async () => {
     if (!order) return;
     setSavingDriver(true);
