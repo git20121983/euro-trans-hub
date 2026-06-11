@@ -171,9 +171,10 @@ export default function DriverVerificationModal({ driver, open, onOpenChange, on
 
         <TooltipProvider delayDuration={200}>
         <Tabs defaultValue={initialTab} className="w-full">
-          <TabsList className="grid grid-cols-2 w-full">
+          <TabsList className="grid grid-cols-3 w-full">
             <TabsTrigger value="overview">Огляд</TabsTrigger>
             <TabsTrigger value="documents">Документи</TabsTrigger>
+            <TabsTrigger value="finance"><Wallet className="w-3.5 h-3.5 mr-1" /> Витрати</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4 mt-4">
