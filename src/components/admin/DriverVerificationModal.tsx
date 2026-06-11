@@ -259,6 +259,10 @@ export default function DriverVerificationModal({ driver, open, onOpenChange, on
               ))}
             </div>
           </TabsContent>
+
+          <TabsContent value="finance" className="mt-4">
+            <DriverFinancePanel driverId={driver.id} driverName={driver.full_name} />
+          </TabsContent>
         </Tabs>
         </TooltipProvider>
       </DialogContent>
