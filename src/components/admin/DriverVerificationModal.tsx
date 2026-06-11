@@ -34,7 +34,7 @@ interface Props {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   onActioned: () => void;
-  initialTab?: "overview" | "documents";
+  initialTab?: "overview" | "documents" | "finance";
 }
 
 type DocDef = {
