@@ -153,9 +153,12 @@ export default function AdminDrivers() {
                     {truck.plate_number} ({truck.model})
                   </div>
                 )}
-                <div className="flex gap-2 mt-2">
+                <div className="flex gap-2 mt-2 flex-wrap">
                   <Button size="sm" variant="outline" onClick={() => { setDocsTab("documents"); setVerifying(driver); }} className="flex-1">
                     <FolderOpen className="w-4 h-4 mr-1.5" /> Документи
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => { setDocsTab("finance"); setVerifying(driver); }} className="flex-1">
+                    <Wallet className="w-4 h-4 mr-1.5" /> Витрати
                   </Button>
                   {needsVerify && (
                     <Button size="sm" onClick={() => { setDocsTab("overview"); setVerifying(driver); }} className="flex-1 bg-amber-600 hover:bg-amber-700">
