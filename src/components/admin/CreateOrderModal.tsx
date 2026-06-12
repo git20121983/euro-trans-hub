@@ -95,14 +95,24 @@ export default function CreateOrderModal({ open, onOpenChange, onCreated }: Crea
     setClientName(""); setOrigin(""); setDestination(""); setDistance("");
     setCargoType("standard"); setCargoWeight(""); setDriverId(""); setTruckId("");
     setDepartureDate(undefined); setTotalPrice(""); setClientPhone(""); setNotes("");
+    setTripDate(undefined); setCurrency("UAH"); setFreightPriceOriginal("");
+    setExchangeRate(""); setPaymentDate(undefined); setPaymentStatus("unpaid");
   };
 
   const isValid = clientName.trim() && origin.trim() && destination.trim() && Number(distance) > 0;
 
+  // Auto-calc UAH price when currency / original / rate change
+  const freightUah = useMemo(() => {
+    const orig = Number(freightPriceOriginal);
+    if (!orig) return null;
+    if (currency === "UAH") return orig;
+    const rate = Number(exchangeRate);
+    return rate ? Math.round(orig * rate * 100) / 100 : null;
+  }, [freightPriceOriginal, exchangeRate, currency]);
+
   const handleSubmit = async () => {
     if (!isValid) return;
 
-    // Double-check driver/truck not busy
     if (driverId && busyDriverIds.has(driverId)) {
       toast.error("Цей водій вже призначений на активний рейс");
       return;
@@ -113,6 +123,8 @@ export default function CreateOrderModal({ open, onOpenChange, onCreated }: Crea
     }
 
     setLoading(true);
+    const fmt = (d?: Date) => (d ? format(d, "yyyy-MM-dd") : null);
+
     const { error } = await supabase.from("orders").insert({
       client_name: clientName.trim(),
       origin: origin.trim(),
@@ -122,10 +134,17 @@ export default function CreateOrderModal({ open, onOpenChange, onCreated }: Crea
       cargo_weight: cargoWeight ? Number(cargoWeight) : null,
       driver_id: driverId || null,
       truck_id: truckId || null,
-      total_price: totalPrice ? Number(totalPrice) : null,
+      total_price: totalPrice ? Number(totalPrice) : (freightUah ?? null),
       client_phone: clientPhone.trim() || null,
       notes: notes.trim() || null,
       status: driverId ? "planning" : "new",
+      trip_date: fmt(tripDate),
+      currency,
+      freight_price_original: freightPriceOriginal ? Number(freightPriceOriginal) : null,
+      freight_price_uah: freightUah,
+      exchange_rate: exchangeRate ? Number(exchangeRate) : null,
+      payment_date: fmt(paymentDate),
+      payment_status: paymentStatus,
     });
 
     if (error) {
@@ -135,7 +154,6 @@ export default function CreateOrderModal({ open, onOpenChange, onCreated }: Crea
       return;
     }
 
-    // Update driver/truck status if assigned
     if (driverId) {
       await supabase.from("drivers").update({ status: "on_trip" }).eq("id", driverId);
     }
