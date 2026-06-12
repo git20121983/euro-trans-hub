@@ -290,6 +290,81 @@ export default function CreateOrderModal({ open, onOpenChange, onCreated }: Crea
               </div>
             </div>
 
+            {/* Sheet-aligned: Trip date & Currency */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Дата рейсу</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !tripDate && "text-muted-foreground")}>
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {tripDate ? format(tripDate, "dd MMM yyyy", { locale: uk }) : "Оберіть дату"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar mode="single" selected={tripDate} onSelect={setTripDate} initialFocus className="p-3 pointer-events-auto" />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Валюта</Label>
+                <Select value={currency} onValueChange={(v) => setCurrency(v as any)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="UAH">₴ грн</SelectItem>
+                    <SelectItem value="EUR">€ EUR</SelectItem>
+                    <SelectItem value="USD">$ USD</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Freight price + rate */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1.5">
+                <Label>Ціна фрахту</Label>
+                <Input type="number" value={freightPriceOriginal} onChange={e => setFreightPriceOriginal(e.target.value)} placeholder="0" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Курс {currency !== "UAH" && `(${currency}→₴)`}</Label>
+                <Input type="number" value={exchangeRate} onChange={e => setExchangeRate(e.target.value)} placeholder="0" disabled={currency === "UAH"} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Ціна (₴)</Label>
+                <Input type="number" value={freightUah ?? ""} readOnly placeholder="—" className="bg-muted/30" />
+              </div>
+            </div>
+
+            {/* Payment */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Дата оплати</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !paymentDate && "text-muted-foreground")}>
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {paymentDate ? format(paymentDate, "dd MMM yyyy", { locale: uk }) : "Оберіть дату"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar mode="single" selected={paymentDate} onSelect={setPaymentDate} initialFocus className="p-3 pointer-events-auto" />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Статус оплати</Label>
+                <Select value={paymentStatus} onValueChange={(v) => setPaymentStatus(v as any)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unpaid">Не оплачено</SelectItem>
+                    <SelectItem value="partially_paid">Частково</SelectItem>
+                    <SelectItem value="paid">Розрахувався</SelectItem>
+                    <SelectItem value="overdue">Прострочено</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
             {/* Notes */}
             <div className="space-y-1.5">
               <Label>Примітки</Label>
