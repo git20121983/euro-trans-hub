@@ -53,6 +53,7 @@ const App = () => (
               <Route path="fleet" element={<AdminFleet />} />
               <Route path="drivers" element={<AdminDrivers />} />
               <Route path="finance" element={<AdminFinance />} />
+              <Route path="import" element={<AdminImport />} />
             </Route>
 
             {/* Driver mobile interface */}
