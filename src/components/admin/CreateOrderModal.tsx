@@ -50,6 +50,13 @@ export default function CreateOrderModal({ open, onOpenChange, onCreated }: Crea
   const [totalPrice, setTotalPrice] = useState("");
   const [clientPhone, setClientPhone] = useState("");
   const [notes, setNotes] = useState("");
+  // Sheet-aligned fields
+  const [tripDate, setTripDate] = useState<Date>();
+  const [currency, setCurrency] = useState<"UAH" | "EUR" | "USD">("UAH");
+  const [freightPriceOriginal, setFreightPriceOriginal] = useState("");
+  const [exchangeRate, setExchangeRate] = useState("");
+  const [paymentDate, setPaymentDate] = useState<Date>();
+  const [paymentStatus, setPaymentStatus] = useState<"unpaid" | "partially_paid" | "paid" | "overdue">("unpaid");
 
   useEffect(() => {
     if (!open) return;
@@ -88,14 +95,24 @@ export default function CreateOrderModal({ open, onOpenChange, onCreated }: Crea
     setClientName(""); setOrigin(""); setDestination(""); setDistance("");
     setCargoType("standard"); setCargoWeight(""); setDriverId(""); setTruckId("");
     setDepartureDate(undefined); setTotalPrice(""); setClientPhone(""); setNotes("");
+    setTripDate(undefined); setCurrency("UAH"); setFreightPriceOriginal("");
+    setExchangeRate(""); setPaymentDate(undefined); setPaymentStatus("unpaid");
   };
 
   const isValid = clientName.trim() && origin.trim() && destination.trim() && Number(distance) > 0;
 
+  // Auto-calc UAH price when currency / original / rate change
+  const freightUah = useMemo(() => {
+    const orig = Number(freightPriceOriginal);
+    if (!orig) return null;
+    if (currency === "UAH") return orig;
+    const rate = Number(exchangeRate);
+    return rate ? Math.round(orig * rate * 100) / 100 : null;
+  }, [freightPriceOriginal, exchangeRate, currency]);
+
   const handleSubmit = async () => {
     if (!isValid) return;
 
-    // Double-check driver/truck not busy
     if (driverId && busyDriverIds.has(driverId)) {
       toast.error("Цей водій вже призначений на активний рейс");
       return;
@@ -106,6 +123,8 @@ export default function CreateOrderModal({ open, onOpenChange, onCreated }: Crea
     }
 
     setLoading(true);
+    const fmt = (d?: Date) => (d ? format(d, "yyyy-MM-dd") : null);
+
     const { error } = await supabase.from("orders").insert({
       client_name: clientName.trim(),
       origin: origin.trim(),
@@ -115,10 +134,17 @@ export default function CreateOrderModal({ open, onOpenChange, onCreated }: Crea
       cargo_weight: cargoWeight ? Number(cargoWeight) : null,
       driver_id: driverId || null,
       truck_id: truckId || null,
-      total_price: totalPrice ? Number(totalPrice) : null,
+      total_price: totalPrice ? Number(totalPrice) : (freightUah ?? null),
       client_phone: clientPhone.trim() || null,
       notes: notes.trim() || null,
       status: driverId ? "planning" : "new",
+      trip_date: fmt(tripDate),
+      currency,
+      freight_price_original: freightPriceOriginal ? Number(freightPriceOriginal) : null,
+      freight_price_uah: freightUah,
+      exchange_rate: exchangeRate ? Number(exchangeRate) : null,
+      payment_date: fmt(paymentDate),
+      payment_status: paymentStatus,
     });
 
     if (error) {
@@ -128,7 +154,6 @@ export default function CreateOrderModal({ open, onOpenChange, onCreated }: Crea
       return;
     }
 
-    // Update driver/truck status if assigned
     if (driverId) {
       await supabase.from("drivers").update({ status: "on_trip" }).eq("id", driverId);
     }
@@ -262,6 +287,81 @@ export default function CreateOrderModal({ open, onOpenChange, onCreated }: Crea
               <div className="space-y-1.5">
                 <Label>Ціна (₴)</Label>
                 <Input type="number" value={totalPrice} onChange={e => setTotalPrice(e.target.value)} placeholder="0" />
+              </div>
+            </div>
+
+            {/* Sheet-aligned: Trip date & Currency */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Дата рейсу</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !tripDate && "text-muted-foreground")}>
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {tripDate ? format(tripDate, "dd MMM yyyy", { locale: uk }) : "Оберіть дату"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar mode="single" selected={tripDate} onSelect={setTripDate} initialFocus className="p-3 pointer-events-auto" />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Валюта</Label>
+                <Select value={currency} onValueChange={(v) => setCurrency(v as any)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="UAH">₴ грн</SelectItem>
+                    <SelectItem value="EUR">€ EUR</SelectItem>
+                    <SelectItem value="USD">$ USD</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Freight price + rate */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1.5">
+                <Label>Ціна фрахту</Label>
+                <Input type="number" value={freightPriceOriginal} onChange={e => setFreightPriceOriginal(e.target.value)} placeholder="0" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Курс {currency !== "UAH" && `(${currency}→₴)`}</Label>
+                <Input type="number" value={exchangeRate} onChange={e => setExchangeRate(e.target.value)} placeholder="0" disabled={currency === "UAH"} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Ціна (₴)</Label>
+                <Input type="number" value={freightUah ?? ""} readOnly placeholder="—" className="bg-muted/30" />
+              </div>
+            </div>
+
+            {/* Payment */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Дата оплати</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !paymentDate && "text-muted-foreground")}>
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {paymentDate ? format(paymentDate, "dd MMM yyyy", { locale: uk }) : "Оберіть дату"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar mode="single" selected={paymentDate} onSelect={setPaymentDate} initialFocus className="p-3 pointer-events-auto" />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Статус оплати</Label>
+                <Select value={paymentStatus} onValueChange={(v) => setPaymentStatus(v as any)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unpaid">Не оплачено</SelectItem>
+                    <SelectItem value="partially_paid">Частково</SelectItem>
+                    <SelectItem value="paid">Розрахувався</SelectItem>
+                    <SelectItem value="overdue">Прострочено</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
