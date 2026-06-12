@@ -294,12 +294,16 @@ export type Database = {
           client_phone: string | null
           client_user_id: string | null
           created_at: string
+          currency: string
           depreciation_cost: number | null
           destination: string
           distance: number
           driver_advance: number
           driver_id: string | null
           driver_salary: number | null
+          exchange_rate: number | null
+          freight_price_original: number | null
+          freight_price_uah: number | null
           fuel_cost: number | null
           fuel_price: number | null
           id: string
@@ -310,11 +314,14 @@ export type Database = {
           order_number: string
           origin: string
           paid_amount: number
+          payment_date: string | null
           payment_status: string
+          route: string | null
           status: string
           toll_cost: number | null
           total_amount: number | null
           total_price: number | null
+          trip_date: string | null
           truck_id: string | null
           unloading_date: string | null
           updated_at: string
@@ -329,12 +336,16 @@ export type Database = {
           client_phone?: string | null
           client_user_id?: string | null
           created_at?: string
+          currency?: string
           depreciation_cost?: number | null
           destination: string
           distance: number
           driver_advance?: number
           driver_id?: string | null
           driver_salary?: number | null
+          exchange_rate?: number | null
+          freight_price_original?: number | null
+          freight_price_uah?: number | null
           fuel_cost?: number | null
           fuel_price?: number | null
           id?: string
@@ -345,11 +356,14 @@ export type Database = {
           order_number?: string
           origin: string
           paid_amount?: number
+          payment_date?: string | null
           payment_status?: string
+          route?: string | null
           status?: string
           toll_cost?: number | null
           total_amount?: number | null
           total_price?: number | null
+          trip_date?: string | null
           truck_id?: string | null
           unloading_date?: string | null
           updated_at?: string
@@ -364,12 +378,16 @@ export type Database = {
           client_phone?: string | null
           client_user_id?: string | null
           created_at?: string
+          currency?: string
           depreciation_cost?: number | null
           destination?: string
           distance?: number
           driver_advance?: number
           driver_id?: string | null
           driver_salary?: number | null
+          exchange_rate?: number | null
+          freight_price_original?: number | null
+          freight_price_uah?: number | null
           fuel_cost?: number | null
           fuel_price?: number | null
           id?: string
@@ -380,11 +398,14 @@ export type Database = {
           order_number?: string
           origin?: string
           paid_amount?: number
+          payment_date?: string | null
           payment_status?: string
+          route?: string | null
           status?: string
           toll_cost?: number | null
           total_amount?: number | null
           total_price?: number | null
+          trip_date?: string | null
           truck_id?: string | null
           unloading_date?: string | null
           updated_at?: string
