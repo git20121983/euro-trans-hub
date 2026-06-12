@@ -98,7 +98,7 @@ export default function AdminImport() {
     setImporting(true);
     let ok = 0, fail = 0;
     for (const r of rows) {
-      const { error } = await supabase.from("orders").insert({
+      const { error } = await supabase.from("orders").insert([{
         client_name: r.client_name,
         origin: r.origin,
         destination: r.destination,
