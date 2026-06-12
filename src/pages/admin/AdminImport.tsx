@@ -114,7 +114,7 @@ export default function AdminImport() {
         payment_status: r.payment_status,
         notes: r.notes,
         status: "completed",
-      });
+      }]);
       if (error) { console.error(error); fail++; } else ok++;
     }
     setResult({ ok, fail });
