@@ -22,6 +22,7 @@ const menuItems = [
   { title: "Автопарк", url: "/admin/fleet", icon: Truck },
   { title: "Водії", url: "/admin/drivers", icon: Users },
   { title: "Фінанси", url: "/admin/finance", icon: DollarSign },
+  { title: "Імпорт", url: "/admin/import", icon: FileSpreadsheet },
 ];
 
 export function AdminSidebar() {
