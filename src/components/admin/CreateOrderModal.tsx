@@ -50,6 +50,13 @@ export default function CreateOrderModal({ open, onOpenChange, onCreated }: Crea
   const [totalPrice, setTotalPrice] = useState("");
   const [clientPhone, setClientPhone] = useState("");
   const [notes, setNotes] = useState("");
+  // Sheet-aligned fields
+  const [tripDate, setTripDate] = useState<Date>();
+  const [currency, setCurrency] = useState<"UAH" | "EUR" | "USD">("UAH");
+  const [freightPriceOriginal, setFreightPriceOriginal] = useState("");
+  const [exchangeRate, setExchangeRate] = useState("");
+  const [paymentDate, setPaymentDate] = useState<Date>();
+  const [paymentStatus, setPaymentStatus] = useState<"unpaid" | "partially_paid" | "paid" | "overdue">("unpaid");
 
   useEffect(() => {
     if (!open) return;
