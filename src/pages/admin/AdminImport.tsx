@@ -219,25 +219,53 @@ export default function AdminImport() {
         </Card>
       )}
 
-      <Card className="p-5 bg-card/40 border-border/40">
-        <h3 className="font-semibold mb-2 text-foreground">Real-time синхронізація з Google Sheets</h3>
-        <ol className="text-sm text-muted-foreground space-y-2 list-decimal pl-5">
-          <li>
-            <strong className="text-foreground">Через Zapier / Make:</strong> Створіть Zap з тригером
-            "Google Sheets → New Row" та дією "Webhook → POST" на нашу edge-функцію
-            (можна додати пізніше).
-          </li>
-          <li>
-            <strong className="text-foreground">Через Google Apps Script:</strong> у вашій таблиці
-            відкрийте Extensions → Apps Script і додайте onEdit-тригер, що шле fetch на
-            Supabase REST endpoint <code className="bg-muted px-1 rounded">/rest/v1/orders</code>
-            з anon-ключем.
-          </li>
-          <li>
-            <strong className="text-foreground">Експорт назад:</strong> можна щодня вивантажувати з
-            CRM у Sheet через cron edge-функцію (готовий до підключення).
-          </li>
-        </ol>
+      <Card className="p-5 bg-card/40 border-border/40 space-y-3">
+        <h3 className="font-semibold text-foreground flex items-center gap-2">
+          <FileSpreadsheet className="w-4 h-4 text-secondary" />
+          Real-time синхронізація з Google Sheets через Make.com
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          Усі поля таблиці <code className="bg-muted px-1 rounded">orders</code> готові до синхронізації:
+          <code className="bg-muted px-1 rounded mx-1">trip_date</code>,
+          <code className="bg-muted px-1 rounded mx-1">route</code>,
+          <code className="bg-muted px-1 rounded mx-1">client_name</code>,
+          <code className="bg-muted px-1 rounded mx-1">cargo_type</code>,
+          <code className="bg-muted px-1 rounded mx-1">cargo_weight</code>,
+          <code className="bg-muted px-1 rounded mx-1">currency</code>,
+          <code className="bg-muted px-1 rounded mx-1">freight_price_original</code>,
+          <code className="bg-muted px-1 rounded mx-1">freight_price_uah</code>,
+          <code className="bg-muted px-1 rounded mx-1">payment_date</code>,
+          <code className="bg-muted px-1 rounded mx-1">payment_status</code>,
+          <code className="bg-muted px-1 rounded mx-1">notes</code>.
+        </p>
+
+        <div className="space-y-2 text-sm text-muted-foreground">
+          <p className="font-semibold text-foreground">🟢 Sheet → CRM (новий рядок у Google Sheets → новий рейс)</p>
+          <ol className="list-decimal pl-5 space-y-1">
+            <li>У Make.com створіть сценарій з модулем <strong>Google Sheets → Watch Rows</strong> на вашій таблиці.</li>
+            <li>Додайте модуль <strong>HTTP → Make a request</strong>:
+              <ul className="list-disc pl-5 mt-1 space-y-0.5">
+                <li>URL: <code className="bg-muted px-1 rounded text-xs break-all">{`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/orders`}</code></li>
+                <li>Method: <code>POST</code></li>
+                <li>Headers: <code>apikey: &lt;ANON_KEY&gt;</code>, <code>Authorization: Bearer &lt;ANON_KEY&gt;</code>, <code>Content-Type: application/json</code>, <code>Prefer: return=representation</code></li>
+                <li>Body (JSON): зіставте колонки Sheet з полями <code>orders</code> вище.</li>
+              </ul>
+            </li>
+          </ol>
+        </div>
+
+        <div className="space-y-2 text-sm text-muted-foreground">
+          <p className="font-semibold text-foreground">🔵 CRM → Sheet (вебхук Supabase на створення/оновлення/видалення)</p>
+          <ol className="list-decimal pl-5 space-y-1">
+            <li>У Make.com створіть сценарій з тригером <strong>Webhooks → Custom webhook</strong>. Скопіюйте отриманий URL.</li>
+            <li>Зверніться до підтримки Lovable Cloud або адміністратора БД, щоб додати <strong>Database Webhook</strong> на таблицю <code>orders</code> з подіями INSERT / UPDATE / DELETE та цим Make-URL як target.</li>
+            <li>У Make додайте модуль <strong>Google Sheets → Add/Update/Delete Row</strong>, використовуючи <code>record.id</code> як ключ зіставлення.</li>
+          </ol>
+        </div>
+
+        <div className="text-xs text-muted-foreground border-t border-border/40 pt-2">
+          💡 Альтернатива: edge-функція може приймати webhook і робити upsert у Sheets через сервісний акаунт Google — скажіть, якщо потрібно реалізувати.
+        </div>
       </Card>
     </div>
   );
