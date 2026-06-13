@@ -20,6 +20,7 @@ import AdminFleet from "./pages/admin/AdminFleet";
 import AdminDrivers from "./pages/admin/AdminDrivers";
 import AdminFinance from "./pages/admin/AdminFinance";
 import AdminImport from "./pages/admin/AdminImport";
+import AdminMaintenance from "./pages/admin/AdminMaintenance";
 import DriverDashboard from "./pages/DriverDashboard";
 import NotFound from "./pages/NotFound";
 
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="drivers" element={<AdminDrivers />} />
               <Route path="finance" element={<AdminFinance />} />
               <Route path="import" element={<AdminImport />} />
+              <Route path="maintenance" element={<AdminMaintenance />} />
             </Route>
 
             {/* Driver mobile interface */}

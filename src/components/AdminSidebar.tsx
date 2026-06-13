@@ -1,4 +1,4 @@
-import { LayoutDashboard, Package, Truck, Users, DollarSign, LogOut, FileSpreadsheet } from "lucide-react";
+import { LayoutDashboard, Package, Truck, Users, DollarSign, LogOut, FileSpreadsheet, Wrench } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,6 +20,7 @@ const menuItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Замовлення", url: "/admin/orders", icon: Package },
   { title: "Автопарк", url: "/admin/fleet", icon: Truck },
+  { title: "Обслуговування машин", url: "/admin/maintenance", icon: Wrench },
   { title: "Водії", url: "/admin/drivers", icon: Users },
   { title: "Фінанси", url: "/admin/finance", icon: DollarSign },
   { title: "Імпорт", url: "/admin/import", icon: FileSpreadsheet },
