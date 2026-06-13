@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Truck, Wrench, Gauge, AlertTriangle } from "lucide-react";
+import { Truck, Wrench, Gauge, AlertTriangle, History } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import TruckMaintenanceHistory from "@/components/admin/TruckMaintenanceHistory";
 
 type TruckRow = Tables<"trucks">;
 
