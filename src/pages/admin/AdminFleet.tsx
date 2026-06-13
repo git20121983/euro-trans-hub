@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Truck, Wrench, Gauge, AlertTriangle } from "lucide-react";
+import { Truck, Wrench, Gauge, AlertTriangle, History } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import TruckMaintenanceHistory from "@/components/admin/TruckMaintenanceHistory";
 
 type TruckRow = Tables<"trucks">;
 
@@ -19,6 +22,7 @@ const statusColors: Record<string, string> = {
 
 export default function AdminFleet() {
   const [trucks, setTrucks] = useState<TruckRow[]>([]);
+  const [historyTruck, setHistoryTruck] = useState<TruckRow | null>(null);
 
   useEffect(() => {
     supabase.from("trucks").select("*").order("plate_number").then(({ data }) => {
@@ -98,11 +102,36 @@ export default function AdminFleet() {
                   <span className="font-medium">{consumption} л/100км</span>
                   <span className={`ml-2 ${effColor}`}>({efficiency})</span>
                 </div>
+
+                <Button size="sm" variant="outline" className="w-full gap-2" onClick={() => setHistoryTruck(truck)}>
+                  <History className="w-3.5 h-3.5" /> Історія ТО
+                </Button>
               </div>
             );
           })}
         </div>
       )}
+
+      <Dialog open={!!historyTruck} onOpenChange={(o) => !o && setHistoryTruck(null)}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {historyTruck?.plate_number} {historyTruck?.model ? `— ${historyTruck.model}` : ""}
+            </DialogTitle>
+            <DialogDescription>Технічна історія машини</DialogDescription>
+          </DialogHeader>
+          {historyTruck && (
+            <TruckMaintenanceHistory
+              truck={{
+                id: historyTruck.id,
+                plate_number: historyTruck.plate_number,
+                model: historyTruck.model,
+                mileage: historyTruck.mileage,
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

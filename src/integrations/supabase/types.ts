@@ -239,6 +239,56 @@ export type Database = {
           },
         ]
       }
+      maintenance_logs: {
+        Row: {
+          category: string
+          cost: number
+          created_at: string
+          created_by: string | null
+          current_mileage: number | null
+          id: string
+          maintenance_date: string
+          notes: string | null
+          sub_category: string | null
+          updated_at: string
+          vehicle_id: string
+        }
+        Insert: {
+          category: string
+          cost?: number
+          created_at?: string
+          created_by?: string | null
+          current_mileage?: number | null
+          id?: string
+          maintenance_date?: string
+          notes?: string | null
+          sub_category?: string | null
+          updated_at?: string
+          vehicle_id: string
+        }
+        Update: {
+          category?: string
+          cost?: number
+          created_at?: string
+          created_by?: string | null
+          current_mileage?: number | null
+          id?: string
+          maintenance_date?: string
+          notes?: string | null
+          sub_category?: string | null
+          updated_at?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_logs_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "trucks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_events: {
         Row: {
           created_at: string
