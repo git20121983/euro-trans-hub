@@ -152,7 +152,7 @@ export default function AdminMaintenance() {
                   <th className="text-left p-3">Дата</th>
                   <th className="text-left p-3">Машина</th>
                   <th className="text-left p-3">Категорія</th>
-                  <th className="text-left p-3">Деталізація</th>
+                  <th className="text-left p-3">Підкатегорія</th>
                   <th className="text-right p-3">Пробіг</th>
                   <th className="text-right p-3">Сума</th>
                   <th className="text-left p-3">Коментар</th>
