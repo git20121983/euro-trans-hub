@@ -154,97 +154,99 @@ export default function MaintenanceLogModal({ open, onOpenChange, trucks, defaul
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[90dvh] flex flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle>Додати запис про ТО</DialogTitle>
           <DialogDescription>Технічне обслуговування та ремонт машини</DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4">
-          {/* Vehicle */}
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs">Машина</Label>
-            <Select value={vehicleId} onValueChange={setVehicleId}>
-              <SelectTrigger className="h-10 px-3"><SelectValue placeholder="Оберіть машину" /></SelectTrigger>
-              <SelectContent>
-                {trucks.map((t) => (
-                  <SelectItem key={t.id} value={t.id}>
-                    {t.plate_number} {t.model ? `— ${t.model}` : ""}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Date + Mileage */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex-1 overflow-y-auto min-h-0 pr-1">
+          <div className="flex flex-col gap-4">
+            {/* Vehicle */}
             <div className="flex flex-col gap-1.5">
-              <Label className="text-xs">Дата обслуговування</Label>
-              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="h-10 px-3" />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label className="text-xs">Пробіг, км</Label>
-              <Input type="number" inputMode="numeric" value={mileage} onChange={(e) => setMileage(e.target.value)} placeholder="0" className="h-10 px-3" />
-            </div>
-          </div>
-
-          {/* Category + Subcategory */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <Label className="text-xs">Категорія</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="h-10 px-3"><SelectValue /></SelectTrigger>
+              <Label className="text-xs">Машина</Label>
+              <Select value={vehicleId} onValueChange={setVehicleId}>
+                <SelectTrigger className="h-10 px-3"><SelectValue placeholder="Оберіть машину" /></SelectTrigger>
                 <SelectContent>
-                  {allCategoryOptions.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  <SelectSeparator />
-                  <SelectItem value={CUSTOM_VAL}>
-                    <span className="flex items-center gap-1.5"><Plus className="w-3 h-3" /> Додати свій варіант</span>
-                  </SelectItem>
+                  {trucks.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.plate_number} {t.model ? `— ${t.model}` : ""}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-              {category === CUSTOM_VAL && (
-                <Input
-                  autoFocus
-                  className="h-10 px-3 mt-1.5"
-                  placeholder="Назва категорії"
-                  value={customCategory}
-                  onChange={(e) => setCustomCategory(e.target.value)}
-                />
-              )}
             </div>
+
+            {/* Date + Mileage */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-xs">Дата обслуговування</Label>
+                <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="h-10 px-3" />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-xs">Пробіг, км</Label>
+                <Input type="number" inputMode="numeric" value={mileage} onChange={(e) => setMileage(e.target.value)} placeholder="0" className="h-10 px-3" />
+              </div>
+            </div>
+
+            {/* Category + Subcategory */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-xs">Категорія</Label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger className="h-10 px-3"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {allCategoryOptions.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    <SelectSeparator />
+                    <SelectItem value={CUSTOM_VAL}>
+                      <span className="flex items-center gap-1.5"><Plus className="w-3 h-3" /> Додати свій варіант</span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                {category === CUSTOM_VAL && (
+                  <Input
+                    autoFocus
+                    className="h-10 px-3 mt-1.5"
+                    placeholder="Назва категорії"
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                  />
+                )}
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-xs">Підкатегорія</Label>
+                <Select value={subCategory} onValueChange={setSubCategory} disabled={category === CUSTOM_VAL && !customCategory.trim()}>
+                  <SelectTrigger className="h-10 px-3"><SelectValue placeholder="Оберіть" /></SelectTrigger>
+                  <SelectContent>
+                    {subOptions.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    {subOptions.length > 0 && <SelectSeparator />}
+                    <SelectItem value={CUSTOM_VAL}>
+                      <span className="flex items-center gap-1.5"><Plus className="w-3 h-3" /> Додати свій варіант</span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                {subCategory === CUSTOM_VAL && (
+                  <Input
+                    className="h-10 px-3 mt-1.5"
+                    placeholder="Назва підкатегорії"
+                    value={customSubCategory}
+                    onChange={(e) => setCustomSubCategory(e.target.value)}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Cost */}
             <div className="flex flex-col gap-1.5">
-              <Label className="text-xs">Підкатегорія</Label>
-              <Select value={subCategory} onValueChange={setSubCategory} disabled={category === CUSTOM_VAL && !customCategory.trim()}>
-                <SelectTrigger className="h-10 px-3"><SelectValue placeholder="Оберіть" /></SelectTrigger>
-                <SelectContent>
-                  {subOptions.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  {subOptions.length > 0 && <SelectSeparator />}
-                  <SelectItem value={CUSTOM_VAL}>
-                    <span className="flex items-center gap-1.5"><Plus className="w-3 h-3" /> Додати свій варіант</span>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              {subCategory === CUSTOM_VAL && (
-                <Input
-                  className="h-10 px-3 mt-1.5"
-                  placeholder="Назва підкатегорії"
-                  value={customSubCategory}
-                  onChange={(e) => setCustomSubCategory(e.target.value)}
-                />
-              )}
+              <Label className="text-xs">Сума витрат, ₴</Label>
+              <Input type="number" inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value)} placeholder="0" className="h-10 px-3" />
             </div>
-          </div>
 
-          {/* Cost */}
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs">Сума витрат, ₴</Label>
-            <Input type="number" inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value)} placeholder="0" className="h-10 px-3" />
-          </div>
-
-          {/* Notes */}
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs">Коментар / що саме замінено</Label>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className="mt-0 px-3 py-2" placeholder="Опис робіт, артикулі, СТО..." />
+            {/* Notes */}
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-xs">Коментар / що саме замінено</Label>
+              <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className="mt-0 px-3 py-2" placeholder="Опис робіт, артикулі, СТО..." />
+            </div>
           </div>
         </div>
 
