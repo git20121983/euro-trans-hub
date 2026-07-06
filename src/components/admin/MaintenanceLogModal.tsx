@@ -160,11 +160,12 @@ export default function MaintenanceLogModal({ open, onOpenChange, trucks, defaul
           <DialogDescription>Технічне обслуговування та ремонт машини</DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-3">
-          <div>
+        <div className="flex flex-col gap-4">
+          {/* Vehicle */}
+          <div className="flex flex-col gap-1.5">
             <Label className="text-xs">Машина</Label>
             <Select value={vehicleId} onValueChange={setVehicleId}>
-              <SelectTrigger className="mt-1"><SelectValue placeholder="Оберіть машину" /></SelectTrigger>
+              <SelectTrigger className="h-10 px-3"><SelectValue placeholder="Оберіть машину" /></SelectTrigger>
               <SelectContent>
                 {trucks.map((t) => (
                   <SelectItem key={t.id} value={t.id}>
@@ -175,22 +176,24 @@ export default function MaintenanceLogModal({ open, onOpenChange, trucks, defaul
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
+          {/* Date + Mileage */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
               <Label className="text-xs">Дата обслуговування</Label>
-              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="mt-1" />
+              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="h-10 px-3" />
             </div>
-            <div>
+            <div className="flex flex-col gap-1.5">
               <Label className="text-xs">Пробіг, км</Label>
-              <Input type="number" inputMode="numeric" value={mileage} onChange={(e) => setMileage(e.target.value)} placeholder="0" className="mt-1" />
+              <Input type="number" inputMode="numeric" value={mileage} onChange={(e) => setMileage(e.target.value)} placeholder="0" className="h-10 px-3" />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
+          {/* Category + Subcategory */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
               <Label className="text-xs">Категорія</Label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-10 px-3"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {allCategoryOptions.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                   <SelectSeparator />
@@ -202,17 +205,17 @@ export default function MaintenanceLogModal({ open, onOpenChange, trucks, defaul
               {category === CUSTOM_VAL && (
                 <Input
                   autoFocus
-                  className="mt-2"
+                  className="h-10 px-3 mt-1.5"
                   placeholder="Назва категорії"
                   value={customCategory}
                   onChange={(e) => setCustomCategory(e.target.value)}
                 />
               )}
             </div>
-            <div>
+            <div className="flex flex-col gap-1.5">
               <Label className="text-xs">Підкатегорія</Label>
               <Select value={subCategory} onValueChange={setSubCategory} disabled={category === CUSTOM_VAL && !customCategory.trim()}>
-                <SelectTrigger className="mt-1"><SelectValue placeholder="Оберіть" /></SelectTrigger>
+                <SelectTrigger className="h-10 px-3"><SelectValue placeholder="Оберіть" /></SelectTrigger>
                 <SelectContent>
                   {subOptions.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                   {subOptions.length > 0 && <SelectSeparator />}
@@ -223,7 +226,7 @@ export default function MaintenanceLogModal({ open, onOpenChange, trucks, defaul
               </Select>
               {subCategory === CUSTOM_VAL && (
                 <Input
-                  className="mt-2"
+                  className="h-10 px-3 mt-1.5"
                   placeholder="Назва підкатегорії"
                   value={customSubCategory}
                   onChange={(e) => setCustomSubCategory(e.target.value)}
@@ -232,18 +235,20 @@ export default function MaintenanceLogModal({ open, onOpenChange, trucks, defaul
             </div>
           </div>
 
-          <div>
+          {/* Cost */}
+          <div className="flex flex-col gap-1.5">
             <Label className="text-xs">Сума витрат, ₴</Label>
-            <Input type="number" inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value)} placeholder="0" className="mt-1" />
+            <Input type="number" inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value)} placeholder="0" className="h-10 px-3" />
           </div>
 
-          <div>
+          {/* Notes */}
+          <div className="flex flex-col gap-1.5">
             <Label className="text-xs">Коментар / що саме замінено</Label>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className="mt-1" placeholder="Опис робіт, артикулі, СТО..." />
+            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className="mt-0 px-3 py-2" placeholder="Опис робіт, артикулі, СТО..." />
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="pt-4 gap-2">
           <Button variant="ghost" onClick={() => onOpenChange(false)}>Скасувати</Button>
           <Button onClick={save} disabled={saving}>
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Зберегти"}
