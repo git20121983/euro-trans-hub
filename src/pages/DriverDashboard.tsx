@@ -739,6 +739,14 @@ export default function DriverDashboard() {
           })
         )}
       </div>
+
+      <CustomsSelectModal
+        open={customsOpen}
+        onOpenChange={setCustomsOpen}
+        saving={savingCustoms}
+        onConfirm={handleCustomsConfirm}
+      />
     </div>
+
   );
 }
