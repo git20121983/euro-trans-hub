@@ -13,6 +13,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import DriverOnboarding from "./DriverOnboarding";
 import DriverProfileMenu from "@/components/driver/DriverProfileMenu";
 import ExpensesPanel from "@/components/expenses/ExpensesPanel";
+import CustomsSelectModal from "@/components/driver/CustomsSelectModal";
 
 type Order = Tables<"orders">;
 type Driver = Tables<"drivers">;
@@ -51,6 +52,9 @@ export default function DriverDashboard() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [customsOpen, setCustomsOpen] = useState(false);
+  const [savingCustoms, setSavingCustoms] = useState(false);
+  const [currentCustoms, setCurrentCustoms] = useState<{ region: string; checkpoint: string; country: string; at: string } | null>(null);
 
   const fetchDriverData = useCallback(async (userId: string) => {
     setLoading(true);
