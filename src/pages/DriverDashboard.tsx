@@ -476,7 +476,7 @@ export default function DriverDashboard() {
               return (
                 <Button
                   key={status.id}
-                  onClick={() => updateDriverStatus(status.id)}
+                  onClick={() => status.id === "customs" ? setCustomsOpen(true) : updateDriverStatus(status.id)}
                   disabled={updatingStatus}
                   className={`h-16 text-sm font-medium transition-all ${
                     isActive
@@ -498,10 +498,25 @@ export default function DriverDashboard() {
         {/* Customs Block */}
         {isOnCustoms && (
           <div className="rounded-xl border border-violet-500/30 bg-violet-500/5 p-4 space-y-3">
-            <p className="text-sm font-semibold flex items-center gap-2">
-              <Shield className="w-4 h-4 text-violet-400" />
-              Митні пункти пропуску
-            </p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm font-semibold flex items-center gap-2">
+                <Shield className="w-4 h-4 text-violet-400" />
+                Митні пункти пропуску
+              </p>
+              <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setCustomsOpen(true)}>
+                Змінити
+              </Button>
+            </div>
+            {currentCustoms && (
+              <div className="rounded-lg border border-violet-500/40 bg-violet-500/10 p-3">
+                <p className="text-[10px] uppercase tracking-wider text-violet-300 mb-0.5">Поточна митниця</p>
+                <p className="text-sm font-semibold text-foreground">{currentCustoms.checkpoint}</p>
+                <p className="text-[11px] text-muted-foreground">
+                  {currentCustoms.region} обл. · {currentCustoms.country} · {new Date(currentCustoms.at).toLocaleString("uk-UA")}
+                </p>
+              </div>
+            )}
+
             <div className="space-y-2">
               {CUSTOMS_POINTS.map((cp) => (
                 <div key={cp.name} className="flex items-center justify-between p-2 rounded-lg bg-card border border-border">
