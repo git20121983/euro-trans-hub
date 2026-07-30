@@ -13,6 +13,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import DriverOnboarding from "./DriverOnboarding";
 import DriverProfileMenu from "@/components/driver/DriverProfileMenu";
 import ExpensesPanel from "@/components/expenses/ExpensesPanel";
+import CustomsSelectModal from "@/components/driver/CustomsSelectModal";
 
 type Order = Tables<"orders">;
 type Driver = Tables<"drivers">;
@@ -51,6 +52,9 @@ export default function DriverDashboard() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [customsOpen, setCustomsOpen] = useState(false);
+  const [savingCustoms, setSavingCustoms] = useState(false);
+  const [currentCustoms, setCurrentCustoms] = useState<{ region: string; checkpoint: string; country: string; at: string } | null>(null);
 
   const fetchDriverData = useCallback(async (userId: string) => {
     setLoading(true);
@@ -223,6 +227,39 @@ export default function DriverDashboard() {
     toast.success(`Статус: ${label}`);
     setUpdatingStatus(false);
   };
+
+  const handleCustomsConfirm = async (data: { region: string; checkpoint: string; country: string; coords?: string }) => {
+    setSavingCustoms(true);
+    const activeOrder = orders.find((o) => !["completed", "cancelled"].includes(o.status));
+
+    if (activeOrder) {
+      const { error } = await supabase.from("order_events").insert({
+        order_id: activeOrder.id,
+        event_type: "customs_checkpoint",
+        description: `Митниця: ${data.checkpoint} (${data.region} обл., ${data.country})`,
+        metadata: {
+          region: data.region,
+          checkpoint: data.checkpoint,
+          country: data.country,
+          coords: data.coords ?? null,
+          timestamp: new Date().toISOString(),
+        },
+      });
+      if (error) {
+        toast.error(`Не вдалося зберегти митницю: ${error.message}`);
+        setSavingCustoms(false);
+        return;
+      }
+    }
+
+    setCurrentCustoms({ ...data, at: new Date().toISOString() });
+    setCustomsOpen(false);
+    setSavingCustoms(false);
+    toast.success(`Митницю збережено: ${data.checkpoint}`);
+    await updateDriverStatus("customs");
+  };
+
+
 
   const syncDriverStatusFromOrder = async (newOrderStatus: string) => {
     if (!driverRecord) return;
@@ -439,7 +476,7 @@ export default function DriverDashboard() {
               return (
                 <Button
                   key={status.id}
-                  onClick={() => updateDriverStatus(status.id)}
+                  onClick={() => status.id === "customs" ? setCustomsOpen(true) : updateDriverStatus(status.id)}
                   disabled={updatingStatus}
                   className={`h-16 text-sm font-medium transition-all ${
                     isActive
@@ -461,10 +498,25 @@ export default function DriverDashboard() {
         {/* Customs Block */}
         {isOnCustoms && (
           <div className="rounded-xl border border-violet-500/30 bg-violet-500/5 p-4 space-y-3">
-            <p className="text-sm font-semibold flex items-center gap-2">
-              <Shield className="w-4 h-4 text-violet-400" />
-              Митні пункти пропуску
-            </p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm font-semibold flex items-center gap-2">
+                <Shield className="w-4 h-4 text-violet-400" />
+                Митні пункти пропуску
+              </p>
+              <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setCustomsOpen(true)}>
+                Змінити
+              </Button>
+            </div>
+            {currentCustoms && (
+              <div className="rounded-lg border border-violet-500/40 bg-violet-500/10 p-3">
+                <p className="text-[10px] uppercase tracking-wider text-violet-300 mb-0.5">Поточна митниця</p>
+                <p className="text-sm font-semibold text-foreground">{currentCustoms.checkpoint}</p>
+                <p className="text-[11px] text-muted-foreground">
+                  {currentCustoms.region} обл. · {currentCustoms.country} · {new Date(currentCustoms.at).toLocaleString("uk-UA")}
+                </p>
+              </div>
+            )}
+
             <div className="space-y-2">
               {CUSTOMS_POINTS.map((cp) => (
                 <div key={cp.name} className="flex items-center justify-between p-2 rounded-lg bg-card border border-border">
@@ -687,6 +739,14 @@ export default function DriverDashboard() {
           })
         )}
       </div>
+
+      <CustomsSelectModal
+        open={customsOpen}
+        onOpenChange={setCustomsOpen}
+        saving={savingCustoms}
+        onConfirm={handleCustomsConfirm}
+      />
     </div>
+
   );
 }
