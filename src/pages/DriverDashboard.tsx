@@ -228,6 +228,39 @@ export default function DriverDashboard() {
     setUpdatingStatus(false);
   };
 
+  const handleCustomsConfirm = async (data: { region: string; checkpoint: string; country: string; coords?: string }) => {
+    setSavingCustoms(true);
+    const activeOrder = orders.find((o) => !["completed", "cancelled"].includes(o.status));
+
+    if (activeOrder) {
+      const { error } = await supabase.from("order_events").insert({
+        order_id: activeOrder.id,
+        event_type: "customs_checkpoint",
+        description: `Митниця: ${data.checkpoint} (${data.region} обл., ${data.country})`,
+        metadata: {
+          region: data.region,
+          checkpoint: data.checkpoint,
+          country: data.country,
+          coords: data.coords ?? null,
+          timestamp: new Date().toISOString(),
+        },
+      });
+      if (error) {
+        toast.error(`Не вдалося зберегти митницю: ${error.message}`);
+        setSavingCustoms(false);
+        return;
+      }
+    }
+
+    setCurrentCustoms({ ...data, at: new Date().toISOString() });
+    setCustomsOpen(false);
+    setSavingCustoms(false);
+    toast.success(`Митницю збережено: ${data.checkpoint}`);
+    await updateDriverStatus("customs");
+  };
+
+
+
   const syncDriverStatusFromOrder = async (newOrderStatus: string) => {
     if (!driverRecord) return;
     const newDriverStatus = orderToDriverStatus(newOrderStatus);
