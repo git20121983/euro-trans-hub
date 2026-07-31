@@ -1,12 +1,17 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Loader2, Shield, MapPin, ExternalLink } from "lucide-react";
-import { CUSTOMS_BY_REGION, CUSTOMS_REGIONS } from "@/lib/customsCheckpoints";
+import { Input } from "@/components/ui/input";
+import { Loader2, Shield, MapPin, ExternalLink, Search } from "lucide-react";
+import { CUSTOMS_BY_REGION, CUSTOMS_REGIONS, CustomsCheckpoint } from "@/lib/customsCheckpoints";
+
+interface SearchablePoint extends CustomsCheckpoint {
+  region: string;
+}
 
 interface Props {
   open: boolean;
@@ -18,13 +23,46 @@ interface Props {
 export default function CustomsSelectModal({ open, onOpenChange, saving, onConfirm }: Props) {
   const [region, setRegion] = useState<string>("");
   const [checkpoint, setCheckpoint] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const allPoints = useMemo<SearchablePoint[]>(() => {
+    return CUSTOMS_REGIONS.flatMap((r) =>
+      (CUSTOMS_BY_REGION[r] ?? []).map((p) => ({ ...p, region: r }))
+    );
+  }, []);
+
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+  const filteredPoints = useMemo<SearchablePoint[]>(() => {
+    if (!normalizedSearch) return [];
+    return allPoints.filter((p) =>
+      p.name.toLowerCase().includes(normalizedSearch) ||
+      p.country.toLowerCase().includes(normalizedSearch) ||
+      p.region.toLowerCase().includes(normalizedSearch)
+    );
+  }, [allPoints, normalizedSearch]);
 
   const points = region ? CUSTOMS_BY_REGION[region] ?? [] : [];
-  const selected = points.find((p) => p.name === checkpoint);
+  const selected = allPoints.find((p) => p.region === region && p.name === checkpoint);
 
   const handleConfirm = () => {
     if (!region || !selected) return;
     onConfirm({ region, checkpoint: selected.name, country: selected.country, coords: selected.coords });
+  };
+
+  const handleSelectCheckpoint = (name: string) => {
+    if (normalizedSearch && filteredPoints.length > 0) {
+      const found = filteredPoints.find((p) => p.name === name);
+      if (found) {
+        setRegion(found.region);
+        setCheckpoint(found.name);
+        return;
+      }
+    }
+    setCheckpoint(name);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
   };
 
   return (
