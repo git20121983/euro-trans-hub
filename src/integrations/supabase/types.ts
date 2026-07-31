@@ -130,10 +130,12 @@ export type Database = {
           category: string
           created_at: string
           created_by: string | null
+          currency: string
           description: string | null
           driver_id: string | null
           id: string
           order_id: string
+          receipt_url: string | null
           updated_at: string
         }
         Insert: {
@@ -141,10 +143,12 @@ export type Database = {
           category: string
           created_at?: string
           created_by?: string | null
+          currency?: string
           description?: string | null
           driver_id?: string | null
           id?: string
           order_id: string
+          receipt_url?: string | null
           updated_at?: string
         }
         Update: {
@@ -152,10 +156,12 @@ export type Database = {
           category?: string
           created_at?: string
           created_by?: string | null
+          currency?: string
           description?: string | null
           driver_id?: string | null
           id?: string
           order_id?: string
+          receipt_url?: string | null
           updated_at?: string
         }
         Relationships: [
