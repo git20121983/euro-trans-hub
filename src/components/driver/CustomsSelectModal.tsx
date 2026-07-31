@@ -49,17 +49,8 @@ export default function CustomsSelectModal({ open, onOpenChange, saving, onConfi
     onConfirm({ region, checkpoint: selected.name, country: selected.country, coords: selected.coords });
   };
 
-  const handleSelectCheckpoint = (name: string) => {
-    if (normalizedSearch && filteredPoints.length > 0) {
-      const found = filteredPoints.find((p) => p.name === name);
-      if (found) {
-        setRegion(found.region);
-        setCheckpoint(found.name);
-        return;
-      }
-    }
-    setCheckpoint(name);
-  };
+
+
 
   const clearSearch = () => {
     setSearchQuery("");
@@ -99,58 +90,66 @@ export default function CustomsSelectModal({ open, onOpenChange, saving, onConfi
                 </button>
               )}
             </div>
-            {normalizedSearch && filteredPoints.length === 0 && (
-              <p className="text-xs text-muted-foreground">Нічого не знайдено. Спробуйте інший запит.</p>
-            )}
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>Область</Label>
-            <Select value={region} onValueChange={(v) => { setRegion(v); setCheckpoint(""); setSearchQuery(""); }}>
-              <SelectTrigger className="h-10">
-                <SelectValue placeholder="Оберіть область" />
-              </SelectTrigger>
-              <SelectContent>
-                {CUSTOMS_REGIONS.map((r) => (
-                  <SelectItem key={r} value={r}>{r}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {normalizedSearch ? (
+            <div className="flex flex-col gap-1.5">
+              <Label>Результати пошуку ({filteredPoints.length})</Label>
+              {filteredPoints.length === 0 ? (
+                <p className="text-xs text-muted-foreground py-2">Нічого не знайдено. Спробуйте інший запит.</p>
+              ) : (
+                <div className="max-h-56 overflow-y-auto rounded-lg border border-border divide-y divide-border/60">
+                  {filteredPoints.map((p) => {
+                    const active = p.region === region && p.name === checkpoint;
+                    return (
+                      <button
+                        key={`${p.region}-${p.name}`}
+                        type="button"
+                        onClick={() => { setRegion(p.region); setCheckpoint(p.name); }}
+                        className={`w-full text-left px-3 py-2 transition-colors ${active ? "bg-violet-500/15" : "hover:bg-muted/50"}`}
+                      >
+                        <p className="text-sm font-medium text-foreground">{p.name}</p>
+                        <p className="text-xs text-muted-foreground">{p.region} обл. · {p.country}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-col gap-1.5">
+                <Label>Область</Label>
+                <Select value={region} onValueChange={(v) => { setRegion(v); setCheckpoint(""); }}>
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Оберіть область" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CUSTOMS_REGIONS.map((r) => (
+                      <SelectItem key={r} value={r}>{r}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>Митний пост / пункт пропуску</Label>
-            <Select
-              value={checkpoint}
-              onValueChange={handleSelectCheckpoint}
-              disabled={!region && !normalizedSearch}
-            >
-              <SelectTrigger className="h-10">
-                <SelectValue placeholder={
-                  normalizedSearch
-                    ? "Оберіть з результатів пошуку"
-                    : region
-                      ? "Оберіть пункт пропуску"
-                      : "Спочатку оберіть область або скористайтесь пошуком"
-                } />
-              </SelectTrigger>
-              <SelectContent>
-                {normalizedSearch ? (
-                  filteredPoints.map((p) => (
-                    <SelectItem key={`${p.region}-${p.name}`} value={p.name}>
-                      {p.name} — {p.country} ({p.region} обл.)
-                    </SelectItem>
-                  ))
-                ) : (
-                  points.map((p) => (
-                    <SelectItem key={p.name} value={p.name}>
-                      {p.name} — {p.country}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          </div>
+              <div className="flex flex-col gap-1.5">
+                <Label>Митний пост / пункт пропуску</Label>
+                <Select value={checkpoint} onValueChange={setCheckpoint} disabled={!region}>
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder={region ? "Оберіть пункт пропуску" : "Спочатку оберіть область або скористайтесь пошуком"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {points.map((p) => (
+                      <SelectItem key={p.name} value={p.name}>
+                        {p.name} — {p.country}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
+
 
           {selected && (
             <div className="rounded-lg border border-violet-500/30 bg-violet-500/5 p-3 flex items-start gap-2">
