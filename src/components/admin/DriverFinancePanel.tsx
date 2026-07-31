@@ -7,7 +7,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Loader2, Download, FileText, Wallet, TrendingDown, Scale } from "lucide-react";
-import { EXPENSE_CATEGORIES } from "@/components/expenses/ExpensesPanel";
+import { EXPENSE_CATEGORIES , toUah } from "@/components/expenses/ExpensesPanel";
 import { toast } from "sonner";
 
 interface Props {
@@ -29,6 +29,7 @@ interface ExpenseRow {
   id: string;
   order_id: string;
   amount: number;
+  currency: string | null;
   category: string;
   description: string | null;
   created_at: string;
@@ -63,7 +64,7 @@ export default function DriverFinancePanel({ driverId, driverName }: Props) {
           .order("created_at", { ascending: false }),
         supabase
           .from("expenses")
-          .select("id, order_id, amount, category, description, created_at")
+          .select("id, order_id, amount, currency, category, description, created_at")
           .eq("driver_id", driverId)
           .order("created_at", { ascending: false }),
       ]);
@@ -119,14 +120,14 @@ export default function DriverFinancePanel({ driverId, driverName }: Props) {
   }, [orders]);
 
   const totalAllowance = filteredOrders.reduce((s, o) => s + Number(o.allowance_amount || 0), 0);
-  const totalExpenses = filteredExpenses.reduce((s, e) => s + Number(e.amount || 0), 0);
+  const totalExpenses = filteredExpenses.reduce((s, e) => s + toUah(Number(e.amount || 0), e.currency), 0);
   const balance = totalAllowance - totalExpenses;
 
   const byCategory = useMemo(() => {
     const map = new Map<string, number>();
     EXPENSE_CATEGORIES.forEach(c => map.set(c, 0));
     filteredExpenses.forEach(e => {
-      map.set(e.category, (map.get(e.category) ?? 0) + Number(e.amount || 0));
+      map.set(e.category, (map.get(e.category) ?? 0) + toUah(Number(e.amount || 0), e.currency));
     });
     return Array.from(map.entries());
   }, [filteredExpenses]);
@@ -141,7 +142,7 @@ export default function DriverFinancePanel({ driverId, driverName }: Props) {
           o?.order_number ?? "—",
           o ? `${o.origin} → ${o.destination}` : "—",
           e.category,
-          String(Number(e.amount || 0)),
+          String(toUah(Number(e.amount || 0), e.currency)),
           (e.description ?? "").replace(/[\r\n]+/g, " "),
         ];
       }),
@@ -278,7 +279,7 @@ export default function DriverFinancePanel({ driverId, driverName }: Props) {
                         <td className="p-2 whitespace-nowrap">{new Date(e.created_at).toLocaleDateString("uk-UA")}</td>
                         <td className="p-2 whitespace-nowrap">{o?.order_number ?? "—"}</td>
                         <td className="p-2">{e.category}</td>
-                        <td className="p-2 text-right font-medium">{fmt(Number(e.amount))} ₴</td>
+                        <td className="p-2 text-right font-medium">{fmt(toUah(Number(e.amount), e.currency))} ₴</td>
                         <td className="p-2 text-muted-foreground">{e.description ?? "—"}</td>
                       </tr>
                     );
@@ -329,7 +330,7 @@ export default function DriverFinancePanel({ driverId, driverName }: Props) {
                     <td className="p-3">
                       <span className="px-2 py-0.5 rounded-full bg-secondary/15 text-secondary">{e.category}</span>
                     </td>
-                    <td className="p-3 text-right font-semibold">{fmt(Number(e.amount))} ₴</td>
+                    <td className="p-3 text-right font-semibold">{fmt(toUah(Number(e.amount), e.currency))} ₴</td>
                     <td className="p-3 text-muted-foreground">{e.description ?? "—"}</td>
                   </tr>
                 );

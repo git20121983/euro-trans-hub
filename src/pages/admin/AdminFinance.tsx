@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Tables } from "@/integrations/supabase/types";
+import { toUah } from "@/components/expenses/ExpensesPanel";
 
 type Order = Tables<"orders"> & {
   total_amount?: number | null;
@@ -42,6 +43,7 @@ const STATUS_COLOR: Record<string, string> = {
 export default function AdminFinance() {
   const { isAdmin, isAccountant, isManager } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [expensesByOrder, setExpensesByOrder] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
 
   const canSeeCompanyProfit = isAdmin || isAccountant;
@@ -55,6 +57,17 @@ export default function AdminFinance() {
       .then(({ data }) => {
         setOrders((data ?? []) as Order[]);
         setLoading(false);
+      });
+
+    supabase
+      .from("expenses")
+      .select("order_id, amount, currency")
+      .then(({ data }) => {
+        const map: Record<string, number> = {};
+        (data ?? []).forEach((e: { order_id: string; amount: number; currency: string | null }) => {
+          map[e.order_id] = (map[e.order_id] ?? 0) + toUah(Number(e.amount || 0), e.currency);
+        });
+        setExpensesByOrder(map);
       });
   }, []);
 
@@ -90,11 +103,12 @@ export default function AdminFinance() {
       const salary = Number(o.driver_salary ?? 0);
       const depr = Number(o.depreciation_cost ?? 0);
       const toll = Number(o.toll_cost ?? 0);
-      forecastProfit += total - vat - fuel - salary - depr - toll;
+      const tripExpenses = expensesByOrder[o.id] ?? 0;
+      forecastProfit += total - vat - fuel - salary - depr - toll - tripExpenses;
     }
 
     return { receivable, activeAdvances, forecastProfit, overdueCount };
-  }, [orders]);
+  }, [orders, expensesByOrder]);
 
   const widgets = [
     {
@@ -121,7 +135,7 @@ export default function AdminFinance() {
       value: `${fmt(stats.forecastProfit)} ₴`,
       icon: TrendingUp,
       tone: stats.forecastProfit >= 0 ? "text-emerald-300" : "text-red-300",
-      sub: "З урахуванням ПДВ",
+      sub: "З ПДВ та дорожніми витратами",
       visible: canSeeCompanyProfit,
     },
   ];
