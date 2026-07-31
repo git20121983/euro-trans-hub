@@ -49,17 +49,8 @@ export default function CustomsSelectModal({ open, onOpenChange, saving, onConfi
     onConfirm({ region, checkpoint: selected.name, country: selected.country, coords: selected.coords });
   };
 
-  const handleSelectCheckpoint = (name: string) => {
-    if (normalizedSearch && filteredPoints.length > 0) {
-      const found = filteredPoints.find((p) => p.name === name);
-      if (found) {
-        setRegion(found.region);
-        setCheckpoint(found.name);
-        return;
-      }
-    }
-    setCheckpoint(name);
-  };
+
+
 
   const clearSearch = () => {
     setSearchQuery("");
