@@ -654,6 +654,18 @@ export default function DriverDashboard() {
                       compact
                     />
                   </div>
+
+                  {/* Demurrage timers */}
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <DemurrageControls
+                      order={order}
+                      onUpdated={(patch) =>
+                        setOrders((prev) =>
+                          prev.map((o) => (o.id === order.id ? { ...o, ...patch } as Order : o))
+                        )
+                      }
+                    />
+                  </div>
                 </div>
 
 
