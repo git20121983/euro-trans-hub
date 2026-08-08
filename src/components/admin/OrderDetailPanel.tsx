@@ -22,7 +22,9 @@ import {
   Fuel, AlertTriangle, Trash2, Save, Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
-import ExpensesPanel from "@/components/expenses/ExpensesPanel";
+import ExpensesPanel, { toUah } from "@/components/expenses/ExpensesPanel";
+import DemurrageTimer from "@/components/demurrage/DemurrageTimer";
+import { getDemurrageSettings, LEG_LABEL } from "@/lib/demurrage";
 
 interface DriverOption {
   id: string;
