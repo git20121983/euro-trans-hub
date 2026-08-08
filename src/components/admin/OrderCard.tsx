@@ -84,6 +84,16 @@ export default function OrderCard({ order, index, isSelected, driverName, truckP
                 {getCargoLabel(order.cargo_type)}
               </Badge>
             )}
+            {activeLeg && (
+              <DemurrageTimer
+                compact
+                label={LEG_LABEL[activeLeg]}
+                arrivedAt={activeLeg === "loading" ? order.loading_arrived_at : order.unloading_arrived_at}
+                freeHours={demurrage.freeHours}
+                rate={demurrage.rate}
+                currency={demurrage.currency}
+              />
+            )}
             {docsCount > 0 && (
               <span className="ml-auto flex items-center gap-0.5 text-[10px] text-blue-400">
                 <Paperclip className="w-3 h-3" />
