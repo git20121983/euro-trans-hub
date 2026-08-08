@@ -351,6 +351,10 @@ export type Database = {
           client_user_id: string | null
           created_at: string
           currency: string
+          demurrage_amount: number
+          demurrage_currency: string
+          demurrage_hours: number
+          demurrage_rate: number
           depreciation_cost: number | null
           destination: string
           distance: number
@@ -358,12 +362,15 @@ export type Database = {
           driver_id: string | null
           driver_salary: number | null
           exchange_rate: number | null
+          free_hours: number
           freight_price_original: number | null
           freight_price_uah: number | null
           fuel_cost: number | null
           fuel_price: number | null
           id: string
           is_international: boolean
+          loading_arrived_at: string | null
+          loading_finished_at: string | null
           manager_id: string | null
           net_profit: number | null
           notes: string | null
@@ -379,7 +386,9 @@ export type Database = {
           total_price: number | null
           trip_date: string | null
           truck_id: string | null
+          unloading_arrived_at: string | null
           unloading_date: string | null
+          unloading_finished_at: string | null
           updated_at: string
           vat_amount: number
         }
@@ -393,6 +402,10 @@ export type Database = {
           client_user_id?: string | null
           created_at?: string
           currency?: string
+          demurrage_amount?: number
+          demurrage_currency?: string
+          demurrage_hours?: number
+          demurrage_rate?: number
           depreciation_cost?: number | null
           destination: string
           distance: number
@@ -400,12 +413,15 @@ export type Database = {
           driver_id?: string | null
           driver_salary?: number | null
           exchange_rate?: number | null
+          free_hours?: number
           freight_price_original?: number | null
           freight_price_uah?: number | null
           fuel_cost?: number | null
           fuel_price?: number | null
           id?: string
           is_international?: boolean
+          loading_arrived_at?: string | null
+          loading_finished_at?: string | null
           manager_id?: string | null
           net_profit?: number | null
           notes?: string | null
@@ -421,7 +437,9 @@ export type Database = {
           total_price?: number | null
           trip_date?: string | null
           truck_id?: string | null
+          unloading_arrived_at?: string | null
           unloading_date?: string | null
+          unloading_finished_at?: string | null
           updated_at?: string
           vat_amount?: number
         }
@@ -435,6 +453,10 @@ export type Database = {
           client_user_id?: string | null
           created_at?: string
           currency?: string
+          demurrage_amount?: number
+          demurrage_currency?: string
+          demurrage_hours?: number
+          demurrage_rate?: number
           depreciation_cost?: number | null
           destination?: string
           distance?: number
@@ -442,12 +464,15 @@ export type Database = {
           driver_id?: string | null
           driver_salary?: number | null
           exchange_rate?: number | null
+          free_hours?: number
           freight_price_original?: number | null
           freight_price_uah?: number | null
           fuel_cost?: number | null
           fuel_price?: number | null
           id?: string
           is_international?: boolean
+          loading_arrived_at?: string | null
+          loading_finished_at?: string | null
           manager_id?: string | null
           net_profit?: number | null
           notes?: string | null
@@ -463,7 +488,9 @@ export type Database = {
           total_price?: number | null
           trip_date?: string | null
           truck_id?: string | null
+          unloading_arrived_at?: string | null
           unloading_date?: string | null
+          unloading_finished_at?: string | null
           updated_at?: string
           vat_amount?: number
         }
