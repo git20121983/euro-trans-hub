@@ -2,6 +2,8 @@ import { Draggable } from "@hello-pangea/dnd";
 import { GripVertical, Paperclip, User, Truck as TruckIcon, Route, Weight, Fuel } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 import { Badge } from "@/components/ui/badge";
+import DemurrageTimer from "@/components/demurrage/DemurrageTimer";
+import { getActiveLeg, getDemurrageSettings, LEG_LABEL } from "@/lib/demurrage";
 
 type Order = Tables<"orders">;
 
@@ -50,6 +52,10 @@ export default function OrderCard({ order, index, isSelected, driverName, truckP
       ? Math.round(Number(order.distance) * 0.33)
       : null;
 
+  const activeLeg = getActiveLeg(order);
+  const demurrage = getDemurrageSettings(order);
+
+
   return (
     <Draggable draggableId={order.id} index={index}>
       {(provided, snapshot) => (
@@ -83,6 +89,16 @@ export default function OrderCard({ order, index, isSelected, driverName, truckP
               >
                 {getCargoLabel(order.cargo_type)}
               </Badge>
+            )}
+            {activeLeg && (
+              <DemurrageTimer
+                compact
+                label={LEG_LABEL[activeLeg]}
+                arrivedAt={activeLeg === "loading" ? order.loading_arrived_at : order.unloading_arrived_at}
+                freeHours={demurrage.freeHours}
+                rate={demurrage.rate}
+                currency={demurrage.currency}
+              />
             )}
             {docsCount > 0 && (
               <span className="ml-auto flex items-center gap-0.5 text-[10px] text-blue-400">

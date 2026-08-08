@@ -14,6 +14,7 @@ import DriverOnboarding from "./DriverOnboarding";
 import DriverProfileMenu from "@/components/driver/DriverProfileMenu";
 import ExpensesPanel from "@/components/expenses/ExpensesPanel";
 import CustomsSelectModal from "@/components/driver/CustomsSelectModal";
+import DemurrageControls from "@/components/driver/DemurrageControls";
 
 type Order = Tables<"orders">;
 type Driver = Tables<"drivers">;
@@ -652,6 +653,18 @@ export default function DriverDashboard() {
                       allowance={Number((order as unknown as { allowance_amount?: number }).allowance_amount ?? 0)}
                       canAdd
                       compact
+                    />
+                  </div>
+
+                  {/* Demurrage timers */}
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <DemurrageControls
+                      order={order}
+                      onUpdated={(patch) =>
+                        setOrders((prev) =>
+                          prev.map((o) => (o.id === order.id ? { ...o, ...patch } as Order : o))
+                        )
+                      }
                     />
                   </div>
                 </div>

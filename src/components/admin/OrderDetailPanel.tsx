@@ -22,7 +22,9 @@ import {
   Fuel, AlertTriangle, Trash2, Save, Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
-import ExpensesPanel from "@/components/expenses/ExpensesPanel";
+import ExpensesPanel, { toUah } from "@/components/expenses/ExpensesPanel";
+import DemurrageTimer from "@/components/demurrage/DemurrageTimer";
+import { getDemurrageSettings, LEG_LABEL } from "@/lib/demurrage";
 
 interface DriverOption {
   id: string;
@@ -84,6 +86,9 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
   const [selectedDriverId, setSelectedDriverId] = useState<string>("none");
   const [savingDriver, setSavingDriver] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [freeHoursInput, setFreeHoursInput] = useState("4");
+  const [demurrageRateInput, setDemurrageRateInput] = useState("25");
+  const [savingDemurrage, setSavingDemurrage] = useState(false);
 
   useEffect(() => {
     if (!order || !open) return;
@@ -94,7 +99,29 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
     setTollCost(order.toll_cost?.toString() ?? "0");
     setAllowanceAmount(((order as unknown as { allowance_amount?: number }).allowance_amount ?? 0).toString());
     setSelectedDriverId(order.driver_id ?? "none");
+    const d = getDemurrageSettings(order);
+    setFreeHoursInput(String(d.freeHours));
+    setDemurrageRateInput(String(d.rate));
   }, [order?.id, open]);
+
+  const saveDemurrageSettings = async () => {
+    if (!order) return;
+    setSavingDemurrage(true);
+    const { error } = await supabase
+      .from("orders")
+      .update({
+        free_hours: parseFloat(freeHoursInput || "0"),
+        demurrage_rate: parseFloat(demurrageRateInput || "0"),
+      })
+      .eq("id", order.id);
+    if (error) toast.error("Помилка збереження умов простою");
+    else {
+      toast.success("Умови простою оновлено");
+      onOrderUpdate?.();
+    }
+    setSavingDemurrage(false);
+  };
+
 
   const fetchDrivers = async () => {
     const { data } = await supabase
@@ -177,7 +204,11 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
   const plannedFuelCost = (distance / 100) * FUEL_RATE * fuelPrice;
   const driverSalary = distance * DRIVER_SALARY_RATE;
   const toll = order?.toll_cost ? Number(order.toll_cost) : 0;
-  const totalPrice = order?.total_price ? Number(order.total_price) : 0;
+  const freight = order?.total_price ? Number(order.total_price) : 0;
+  const demurrageSettings = getDemurrageSettings(order);
+  const demurrageAmount = Number(order?.demurrage_amount ?? 0);
+  const demurrageUah = toUah(demurrageAmount, demurrageSettings.currency);
+  const totalPrice = freight + demurrageUah;
   const totalExpenses = plannedFuelCost + driverSalary + toll;
   const netProfit = totalPrice - totalExpenses;
   const margin = totalPrice > 0 ? (netProfit / totalPrice) * 100 : 0;
@@ -559,6 +590,72 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
                   />
                 </div>
 
+                {/* Demurrage / простій */}
+                <div className="pt-3 border-t border-border space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Простій (демередж)
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-xs">Безкоштовні години</Label>
+                      <Input
+                        type="number"
+                        inputMode="decimal"
+                        className="mt-1"
+                        value={freeHoursInput}
+                        onChange={(e) => setFreeHoursInput(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Ставка, {demurrageSettings.currency}/год</Label>
+                      <Input
+                        type="number"
+                        inputMode="decimal"
+                        className="mt-1"
+                        value={demurrageRateInput}
+                        onChange={(e) => setDemurrageRateInput(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <Button size="sm" variant="outline" className="w-full gap-1" onClick={saveDemurrageSettings} disabled={savingDemurrage}>
+                    {savingDemurrage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                    Зберегти умови простою
+                  </Button>
+
+                  {(["loading", "unloading"] as const).map((leg) => {
+                    const o = order as unknown as Record<string, string | null>;
+                    const arrivedAt = o[`${leg}_arrived_at`];
+                    if (!arrivedAt) return null;
+                    return (
+                      <DemurrageTimer
+                        key={leg}
+                        label={LEG_LABEL[leg]}
+                        arrivedAt={arrivedAt}
+                        finishedAt={o[`${leg}_finished_at`]}
+                        freeHours={parseFloat(freeHoursInput || "0")}
+                        rate={parseFloat(demurrageRateInput || "0")}
+                        currency={demurrageSettings.currency}
+                      />
+                    );
+                  })}
+
+                  {demurrageAmount > 0 ? (
+                    <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/5">
+                      <p className="text-[10px] uppercase text-muted-foreground">До рахунку клієнта</p>
+                      <p className="text-sm font-semibold text-amber-300">
+                        +{demurrageAmount.toLocaleString("uk-UA")} {demurrageSettings.currency}
+                        {" "}≈ {demurrageUah.toLocaleString("uk-UA", { maximumFractionDigits: 0 })} ₴
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        Простій {Number((order as unknown as { demurrage_hours?: number }).demurrage_hours ?? 0)} год понад ліміт
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-muted-foreground">Простою немає — додаткових нарахувань не буде.</p>
+                  )}
+                </div>
+
+
                 <div className="space-y-2">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Планові витрати
@@ -586,6 +683,11 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
                     <div className="p-3 rounded-lg bg-muted/20 border border-border">
                       <p className="text-[10px] text-muted-foreground uppercase">Дохід</p>
                       <p className="text-sm font-semibold text-green-400">{totalPrice.toLocaleString("uk-UA")} ₴</p>
+                      {demurrageUah > 0 && (
+                        <p className="text-[10px] text-amber-300">
+                          вкл. простій +{demurrageUah.toLocaleString("uk-UA", { maximumFractionDigits: 0 })} ₴
+                        </p>
+                      )}
                     </div>
                     <div className={`p-3 rounded-lg border ${netProfit >= 0 ? "bg-green-500/5 border-green-500/20" : "bg-red-500/5 border-red-500/20"}`}>
                       <p className="text-[10px] text-muted-foreground uppercase">Чистий прибуток</p>
