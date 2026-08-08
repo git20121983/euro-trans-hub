@@ -52,6 +52,10 @@ export default function OrderCard({ order, index, isSelected, driverName, truckP
       ? Math.round(Number(order.distance) * 0.33)
       : null;
 
+  const activeLeg = getActiveLeg(order);
+  const demurrage = getDemurrageSettings(order);
+
+
   return (
     <Draggable draggableId={order.id} index={index}>
       {(provided, snapshot) => (
