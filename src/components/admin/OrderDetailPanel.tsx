@@ -683,6 +683,11 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
                     <div className="p-3 rounded-lg bg-muted/20 border border-border">
                       <p className="text-[10px] text-muted-foreground uppercase">Дохід</p>
                       <p className="text-sm font-semibold text-green-400">{totalPrice.toLocaleString("uk-UA")} ₴</p>
+                      {demurrageUah > 0 && (
+                        <p className="text-[10px] text-amber-300">
+                          вкл. простій +{demurrageUah.toLocaleString("uk-UA", { maximumFractionDigits: 0 })} ₴
+                        </p>
+                      )}
                     </div>
                     <div className={`p-3 rounded-lg border ${netProfit >= 0 ? "bg-green-500/5 border-green-500/20" : "bg-red-500/5 border-red-500/20"}`}>
                       <p className="text-[10px] text-muted-foreground uppercase">Чистий прибуток</p>
