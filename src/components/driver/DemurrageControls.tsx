@@ -21,7 +21,7 @@ export default function DemurrageControls({ order, onUpdated }: Props) {
 
   const patchOrder = async (patch: Record<string, unknown>, message: string, eventText: string) => {
     setSaving(true);
-    const { error } = await supabase.from("orders").update(patch).eq("id", order.id);
+    const { error } = await supabase.from("orders").update(patch as never).eq("id", order.id);
     if (error) {
       toast.error("Не вдалося зберегти час");
     } else {
