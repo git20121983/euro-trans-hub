@@ -177,7 +177,11 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
   const plannedFuelCost = (distance / 100) * FUEL_RATE * fuelPrice;
   const driverSalary = distance * DRIVER_SALARY_RATE;
   const toll = order?.toll_cost ? Number(order.toll_cost) : 0;
-  const totalPrice = order?.total_price ? Number(order.total_price) : 0;
+  const freight = order?.total_price ? Number(order.total_price) : 0;
+  const demurrageSettings = getDemurrageSettings(order);
+  const demurrageAmount = Number(order?.demurrage_amount ?? 0);
+  const demurrageUah = toUah(demurrageAmount, demurrageSettings.currency);
+  const totalPrice = freight + demurrageUah;
   const totalExpenses = plannedFuelCost + driverSalary + toll;
   const netProfit = totalPrice - totalExpenses;
   const margin = totalPrice > 0 ? (netProfit / totalPrice) * 100 : 0;
