@@ -590,6 +590,72 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
                   />
                 </div>
 
+                {/* Demurrage / простій */}
+                <div className="pt-3 border-t border-border space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Простій (демередж)
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-xs">Безкоштовні години</Label>
+                      <Input
+                        type="number"
+                        inputMode="decimal"
+                        className="mt-1"
+                        value={freeHoursInput}
+                        onChange={(e) => setFreeHoursInput(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Ставка, {demurrageSettings.currency}/год</Label>
+                      <Input
+                        type="number"
+                        inputMode="decimal"
+                        className="mt-1"
+                        value={demurrageRateInput}
+                        onChange={(e) => setDemurrageRateInput(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <Button size="sm" variant="outline" className="w-full gap-1" onClick={saveDemurrageSettings} disabled={savingDemurrage}>
+                    {savingDemurrage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                    Зберегти умови простою
+                  </Button>
+
+                  {(["loading", "unloading"] as const).map((leg) => {
+                    const o = order as unknown as Record<string, string | null>;
+                    const arrivedAt = o[`${leg}_arrived_at`];
+                    if (!arrivedAt) return null;
+                    return (
+                      <DemurrageTimer
+                        key={leg}
+                        label={LEG_LABEL[leg]}
+                        arrivedAt={arrivedAt}
+                        finishedAt={o[`${leg}_finished_at`]}
+                        freeHours={parseFloat(freeHoursInput || "0")}
+                        rate={parseFloat(demurrageRateInput || "0")}
+                        currency={demurrageSettings.currency}
+                      />
+                    );
+                  })}
+
+                  {demurrageAmount > 0 ? (
+                    <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/5">
+                      <p className="text-[10px] uppercase text-muted-foreground">До рахунку клієнта</p>
+                      <p className="text-sm font-semibold text-amber-300">
+                        +{demurrageAmount.toLocaleString("uk-UA")} {demurrageSettings.currency}
+                        {" "}≈ {demurrageUah.toLocaleString("uk-UA", { maximumFractionDigits: 0 })} ₴
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        Простій {Number((order as unknown as { demurrage_hours?: number }).demurrage_hours ?? 0)} год понад ліміт
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-muted-foreground">Простою немає — додаткових нарахувань не буде.</p>
+                  )}
+                </div>
+
+
                 <div className="space-y-2">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Планові витрати
