@@ -2,6 +2,8 @@ import { Draggable } from "@hello-pangea/dnd";
 import { GripVertical, Paperclip, User, Truck as TruckIcon, Route, Weight, Fuel } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 import { Badge } from "@/components/ui/badge";
+import DemurrageTimer from "@/components/demurrage/DemurrageTimer";
+import { getActiveLeg, getDemurrageSettings, LEG_LABEL } from "@/lib/demurrage";
 
 type Order = Tables<"orders">;
 
