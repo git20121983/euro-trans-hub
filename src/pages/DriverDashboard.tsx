@@ -14,6 +14,7 @@ import DriverOnboarding from "./DriverOnboarding";
 import DriverProfileMenu from "@/components/driver/DriverProfileMenu";
 import ExpensesPanel from "@/components/expenses/ExpensesPanel";
 import CustomsSelectModal from "@/components/driver/CustomsSelectModal";
+import DemurrageControls from "@/components/driver/DemurrageControls";
 
 type Order = Tables<"orders">;
 type Driver = Tables<"drivers">;
