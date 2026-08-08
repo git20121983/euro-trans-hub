@@ -86,6 +86,9 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
   const [selectedDriverId, setSelectedDriverId] = useState<string>("none");
   const [savingDriver, setSavingDriver] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [freeHoursInput, setFreeHoursInput] = useState("4");
+  const [demurrageRateInput, setDemurrageRateInput] = useState("25");
+  const [savingDemurrage, setSavingDemurrage] = useState(false);
 
   useEffect(() => {
     if (!order || !open) return;
@@ -96,7 +99,29 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
     setTollCost(order.toll_cost?.toString() ?? "0");
     setAllowanceAmount(((order as unknown as { allowance_amount?: number }).allowance_amount ?? 0).toString());
     setSelectedDriverId(order.driver_id ?? "none");
+    const d = getDemurrageSettings(order);
+    setFreeHoursInput(String(d.freeHours));
+    setDemurrageRateInput(String(d.rate));
   }, [order?.id, open]);
+
+  const saveDemurrageSettings = async () => {
+    if (!order) return;
+    setSavingDemurrage(true);
+    const { error } = await supabase
+      .from("orders")
+      .update({
+        free_hours: parseFloat(freeHoursInput || "0"),
+        demurrage_rate: parseFloat(demurrageRateInput || "0"),
+      })
+      .eq("id", order.id);
+    if (error) toast.error("Помилка збереження умов простою");
+    else {
+      toast.success("Умови простою оновлено");
+      onOrderUpdate?.();
+    }
+    setSavingDemurrage(false);
+  };
+
 
   const fetchDrivers = async () => {
     const { data } = await supabase
