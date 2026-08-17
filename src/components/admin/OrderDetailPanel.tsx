@@ -24,7 +24,7 @@ import {
 import { toast } from "sonner";
 import ExpensesPanel, { toUah } from "@/components/expenses/ExpensesPanel";
 import DemurrageTimer from "@/components/demurrage/DemurrageTimer";
-import { getDemurrageSettings, LEG_LABEL } from "@/lib/demurrage";
+import { getDemurrageSettings, getLegDemurrageSettings, LEG_LABEL } from "@/lib/demurrage";
 
 interface DriverOption {
   id: string;
@@ -86,8 +86,10 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
   const [selectedDriverId, setSelectedDriverId] = useState<string>("none");
   const [savingDriver, setSavingDriver] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [freeHoursInput, setFreeHoursInput] = useState("4");
-  const [demurrageRateInput, setDemurrageRateInput] = useState("25");
+  const [loadingFreeHoursInput, setLoadingFreeHoursInput] = useState("4");
+  const [loadingRateInput, setLoadingRateInput] = useState("25");
+  const [unloadingFreeHoursInput, setUnloadingFreeHoursInput] = useState("4");
+  const [unloadingRateInput, setUnloadingRateInput] = useState("25");
   const [savingDemurrage, setSavingDemurrage] = useState(false);
 
   useEffect(() => {
@@ -99,9 +101,12 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
     setTollCost(order.toll_cost?.toString() ?? "0");
     setAllowanceAmount(((order as unknown as { allowance_amount?: number }).allowance_amount ?? 0).toString());
     setSelectedDriverId(order.driver_id ?? "none");
-    const d = getDemurrageSettings(order);
-    setFreeHoursInput(String(d.freeHours));
-    setDemurrageRateInput(String(d.rate));
+    const load = getLegDemurrageSettings(order, "loading");
+    const unload = getLegDemurrageSettings(order, "unloading");
+    setLoadingFreeHoursInput(String(load.freeHours));
+    setLoadingRateInput(String(load.rate));
+    setUnloadingFreeHoursInput(String(unload.freeHours));
+    setUnloadingRateInput(String(unload.rate));
   }, [order?.id, open]);
 
   const saveDemurrageSettings = async () => {
@@ -110,9 +115,13 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
     const { error } = await supabase
       .from("orders")
       .update({
-        free_hours: parseFloat(freeHoursInput || "0"),
-        demurrage_rate: parseFloat(demurrageRateInput || "0"),
-      })
+        loading_free_hours: parseFloat(loadingFreeHoursInput || "0"),
+        loading_demurrage_rate: parseFloat(loadingRateInput || "0"),
+        unloading_free_hours: parseFloat(unloadingFreeHoursInput || "0"),
+        unloading_demurrage_rate: parseFloat(unloadingRateInput || "0"),
+        free_hours: parseFloat(loadingFreeHoursInput || "0"),
+        demurrage_rate: parseFloat(loadingRateInput || "0"),
+      } as never)
       .eq("id", order.id);
     if (error) toast.error("Помилка збереження умов простою");
     else {

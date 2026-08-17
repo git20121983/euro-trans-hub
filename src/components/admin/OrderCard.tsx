@@ -3,7 +3,7 @@ import { GripVertical, Paperclip, User, Truck as TruckIcon, Route, Weight, Fuel 
 import type { Tables } from "@/integrations/supabase/types";
 import { Badge } from "@/components/ui/badge";
 import DemurrageTimer from "@/components/demurrage/DemurrageTimer";
-import { getActiveLeg, getDemurrageSettings, LEG_LABEL } from "@/lib/demurrage";
+import { getActiveLeg, getLegDemurrageSettings, LEG_LABEL } from "@/lib/demurrage";
 
 type Order = Tables<"orders">;
 
@@ -53,7 +53,7 @@ export default function OrderCard({ order, index, isSelected, driverName, truckP
       : null;
 
   const activeLeg = getActiveLeg(order);
-  const demurrage = getDemurrageSettings(order);
+  const demurrage = getLegDemurrageSettings(order, getActiveLeg(order) ?? "loading");
 
 
   return (
