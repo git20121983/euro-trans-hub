@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Loader2, PackageCheck, Timer } from "lucide-react";
 import DemurrageTimer from "@/components/demurrage/DemurrageTimer";
 import {
-  calcDemurrage, getDemurrageSettings, LEG_LABEL,
+  calcDemurrage, getDemurrageSettings, getLegDemurrageSettings, LEG_LABEL,
   type DemurrageLeg, type DemurrageOrderFields,
 } from "@/lib/demurrage";
 
@@ -17,7 +17,7 @@ interface Props {
 /** Кнопки «Прибув / Завершив» для завантаження та розвантаження + живий таймер простою */
 export default function DemurrageControls({ order, onUpdated }: Props) {
   const [saving, setSaving] = useState(false);
-  const { freeHours, rate, currency } = getDemurrageSettings(order);
+  const { currency } = getDemurrageSettings(order);
 
   const patchOrder = async (patch: Record<string, unknown>, message: string, eventText: string) => {
     setSaving(true);
@@ -39,6 +39,7 @@ export default function DemurrageControls({ order, onUpdated }: Props) {
 
   const arrive = (leg: DemurrageLeg) => {
     const at = new Date().toISOString();
+    const { freeHours } = getLegDemurrageSettings(order, leg);
     patchOrder(
       { [`${leg}_arrived_at`]: at },
       `Час прибуття зафіксовано — ${LEG_LABEL[leg].toLowerCase()}`,
@@ -49,6 +50,7 @@ export default function DemurrageControls({ order, onUpdated }: Props) {
   const finish = (leg: DemurrageLeg) => {
     const finishedAt = new Date();
     const arrivedAt = leg === "loading" ? order.loading_arrived_at : order.unloading_arrived_at;
+    const { freeHours, rate } = getLegDemurrageSettings(order, leg);
     const calc = calcDemurrage(arrivedAt, finishedAt.getTime(), freeHours, rate);
     const totalHours = Number(order.demurrage_hours ?? 0) + calc.billableHours;
     const totalAmount = Number(order.demurrage_amount ?? 0) + calc.amount;
@@ -59,8 +61,6 @@ export default function DemurrageControls({ order, onUpdated }: Props) {
         demurrage_hours: totalHours,
         demurrage_amount: totalAmount,
         demurrage_currency: currency,
-        demurrage_rate: rate,
-        free_hours: freeHours,
       },
       calc.amount > 0
         ? `${LEG_LABEL[leg]} завершено. Простій: ${calc.billableHours} год = ${calc.amount} ${currency}`
@@ -82,6 +82,7 @@ export default function DemurrageControls({ order, onUpdated }: Props) {
       {legs.map((leg) => {
         const arrivedAt = leg === "loading" ? order.loading_arrived_at : order.unloading_arrived_at;
         const finishedAt = leg === "loading" ? order.loading_finished_at : order.unloading_finished_at;
+        const legSettings = getLegDemurrageSettings(order, leg);
 
         return (
           <div key={leg} className="space-y-2">
@@ -90,9 +91,9 @@ export default function DemurrageControls({ order, onUpdated }: Props) {
                 label={LEG_LABEL[leg]}
                 arrivedAt={arrivedAt}
                 finishedAt={finishedAt}
-                freeHours={freeHours}
-                rate={rate}
-                currency={currency}
+                freeHours={legSettings.freeHours}
+                rate={legSettings.rate}
+                currency={legSettings.currency}
               />
             )}
             {!arrivedAt ? (

@@ -14,6 +14,10 @@ export interface DemurrageOrderFields {
   demurrage_currency?: string | null;
   demurrage_hours?: number | null;
   demurrage_amount?: number | null;
+  loading_free_hours?: number | null;
+  loading_demurrage_rate?: number | null;
+  unloading_free_hours?: number | null;
+  unloading_demurrage_rate?: number | null;
 }
 
 export interface DemurrageCalc {
@@ -75,6 +79,21 @@ export const LEG_LABEL: Record<DemurrageLeg, string> = {
   loading: "Завантаження",
   unloading: "Розвантаження",
 };
+
+/** Умови простою для конкретного плеча: власні значення рейсу, інакше загальні, інакше дефолти */
+export function getLegDemurrageSettings(
+  order: DemurrageOrderFields | null | undefined,
+  leg: DemurrageLeg,
+) {
+  const base = getDemurrageSettings(order);
+  const legFree = leg === "loading" ? order?.loading_free_hours : order?.unloading_free_hours;
+  const legRate = leg === "loading" ? order?.loading_demurrage_rate : order?.unloading_demurrage_rate;
+  return {
+    freeHours: legFree === null || legFree === undefined ? base.freeHours : Number(legFree),
+    rate: legRate === null || legRate === undefined ? base.rate : Number(legRate),
+    currency: base.currency,
+  };
+}
 
 /** Активне «плече» простою (де таймер зараз тікає), або null */
 export function getActiveLeg(order: DemurrageOrderFields | null | undefined): DemurrageLeg | null {

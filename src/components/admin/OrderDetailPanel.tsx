@@ -24,7 +24,7 @@ import {
 import { toast } from "sonner";
 import ExpensesPanel, { toUah } from "@/components/expenses/ExpensesPanel";
 import DemurrageTimer from "@/components/demurrage/DemurrageTimer";
-import { getDemurrageSettings, LEG_LABEL } from "@/lib/demurrage";
+import { getDemurrageSettings, getLegDemurrageSettings, LEG_LABEL } from "@/lib/demurrage";
 
 interface DriverOption {
   id: string;
@@ -86,8 +86,10 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
   const [selectedDriverId, setSelectedDriverId] = useState<string>("none");
   const [savingDriver, setSavingDriver] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [freeHoursInput, setFreeHoursInput] = useState("4");
-  const [demurrageRateInput, setDemurrageRateInput] = useState("25");
+  const [loadingFreeHoursInput, setLoadingFreeHoursInput] = useState("4");
+  const [loadingRateInput, setLoadingRateInput] = useState("25");
+  const [unloadingFreeHoursInput, setUnloadingFreeHoursInput] = useState("4");
+  const [unloadingRateInput, setUnloadingRateInput] = useState("25");
   const [savingDemurrage, setSavingDemurrage] = useState(false);
 
   useEffect(() => {
@@ -99,9 +101,12 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
     setTollCost(order.toll_cost?.toString() ?? "0");
     setAllowanceAmount(((order as unknown as { allowance_amount?: number }).allowance_amount ?? 0).toString());
     setSelectedDriverId(order.driver_id ?? "none");
-    const d = getDemurrageSettings(order);
-    setFreeHoursInput(String(d.freeHours));
-    setDemurrageRateInput(String(d.rate));
+    const load = getLegDemurrageSettings(order, "loading");
+    const unload = getLegDemurrageSettings(order, "unloading");
+    setLoadingFreeHoursInput(String(load.freeHours));
+    setLoadingRateInput(String(load.rate));
+    setUnloadingFreeHoursInput(String(unload.freeHours));
+    setUnloadingRateInput(String(unload.rate));
   }, [order?.id, open]);
 
   const saveDemurrageSettings = async () => {
@@ -110,9 +115,13 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
     const { error } = await supabase
       .from("orders")
       .update({
-        free_hours: parseFloat(freeHoursInput || "0"),
-        demurrage_rate: parseFloat(demurrageRateInput || "0"),
-      })
+        loading_free_hours: parseFloat(loadingFreeHoursInput || "0"),
+        loading_demurrage_rate: parseFloat(loadingRateInput || "0"),
+        unloading_free_hours: parseFloat(unloadingFreeHoursInput || "0"),
+        unloading_demurrage_rate: parseFloat(unloadingRateInput || "0"),
+        free_hours: parseFloat(loadingFreeHoursInput || "0"),
+        demurrage_rate: parseFloat(loadingRateInput || "0"),
+      } as never)
       .eq("id", order.id);
     if (error) toast.error("Помилка збереження умов простою");
     else {
@@ -595,49 +604,57 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Простій (демередж)
                   </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label className="text-xs">Безкоштовні години</Label>
-                      <Input
-                        type="number"
-                        inputMode="decimal"
-                        className="mt-1"
-                        value={freeHoursInput}
-                        onChange={(e) => setFreeHoursInput(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs">Ставка, {demurrageSettings.currency}/год</Label>
-                      <Input
-                        type="number"
-                        inputMode="decimal"
-                        className="mt-1"
-                        value={demurrageRateInput}
-                        onChange={(e) => setDemurrageRateInput(e.target.value)}
-                      />
-                    </div>
-                  </div>
+                  {(["loading", "unloading"] as const).map((leg) => {
+                    const o = order as unknown as Record<string, string | null>;
+                    const arrivedAt = o[`${leg}_arrived_at`];
+                    const isLoading = leg === "loading";
+                    const hoursVal = isLoading ? loadingFreeHoursInput : unloadingFreeHoursInput;
+                    const rateVal = isLoading ? loadingRateInput : unloadingRateInput;
+                    const setHours = isLoading ? setLoadingFreeHoursInput : setUnloadingFreeHoursInput;
+                    const setRate = isLoading ? setLoadingRateInput : setUnloadingRateInput;
+                    return (
+                      <div key={leg} className="space-y-2 rounded-lg border border-border p-2">
+                        <p className="text-[11px] font-semibold text-foreground">{LEG_LABEL[leg]}</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <Label className="text-xs">Безкоштовні години</Label>
+                            <Input
+                              type="number"
+                              inputMode="decimal"
+                              className="mt-1"
+                              value={hoursVal}
+                              onChange={(e) => setHours(e.target.value)}
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">Ставка, {demurrageSettings.currency}/год</Label>
+                            <Input
+                              type="number"
+                              inputMode="decimal"
+                              className="mt-1"
+                              value={rateVal}
+                              onChange={(e) => setRate(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                        {arrivedAt && (
+                          <DemurrageTimer
+                            label={LEG_LABEL[leg]}
+                            arrivedAt={arrivedAt}
+                            finishedAt={o[`${leg}_finished_at`]}
+                            freeHours={parseFloat(hoursVal || "0")}
+                            rate={parseFloat(rateVal || "0")}
+                            currency={demurrageSettings.currency}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+
                   <Button size="sm" variant="outline" className="w-full gap-1" onClick={saveDemurrageSettings} disabled={savingDemurrage}>
                     {savingDemurrage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                     Зберегти умови простою
                   </Button>
-
-                  {(["loading", "unloading"] as const).map((leg) => {
-                    const o = order as unknown as Record<string, string | null>;
-                    const arrivedAt = o[`${leg}_arrived_at`];
-                    if (!arrivedAt) return null;
-                    return (
-                      <DemurrageTimer
-                        key={leg}
-                        label={LEG_LABEL[leg]}
-                        arrivedAt={arrivedAt}
-                        finishedAt={o[`${leg}_finished_at`]}
-                        freeHours={parseFloat(freeHoursInput || "0")}
-                        rate={parseFloat(demurrageRateInput || "0")}
-                        currency={demurrageSettings.currency}
-                      />
-                    );
-                  })}
 
                   {demurrageAmount > 0 ? (
                     <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/5">
