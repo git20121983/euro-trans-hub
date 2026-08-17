@@ -14,6 +14,10 @@ export interface DemurrageOrderFields {
   demurrage_currency?: string | null;
   demurrage_hours?: number | null;
   demurrage_amount?: number | null;
+  loading_free_hours?: number | null;
+  loading_demurrage_rate?: number | null;
+  unloading_free_hours?: number | null;
+  unloading_demurrage_rate?: number | null;
 }
 
 export interface DemurrageCalc {
