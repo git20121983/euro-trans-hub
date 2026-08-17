@@ -80,6 +80,21 @@ export const LEG_LABEL: Record<DemurrageLeg, string> = {
   unloading: "Розвантаження",
 };
 
+/** Умови простою для конкретного плеча: власні значення рейсу, інакше загальні, інакше дефолти */
+export function getLegDemurrageSettings(
+  order: DemurrageOrderFields | null | undefined,
+  leg: DemurrageLeg,
+) {
+  const base = getDemurrageSettings(order);
+  const legFree = leg === "loading" ? order?.loading_free_hours : order?.unloading_free_hours;
+  const legRate = leg === "loading" ? order?.loading_demurrage_rate : order?.unloading_demurrage_rate;
+  return {
+    freeHours: legFree === null || legFree === undefined ? base.freeHours : Number(legFree),
+    rate: legRate === null || legRate === undefined ? base.rate : Number(legRate),
+    currency: base.currency,
+  };
+}
+
 /** Активне «плече» простою (де таймер зараз тікає), або null */
 export function getActiveLeg(order: DemurrageOrderFields | null | undefined): DemurrageLeg | null {
   if (!order) return null;
