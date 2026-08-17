@@ -370,7 +370,9 @@ export type Database = {
           id: string
           is_international: boolean
           loading_arrived_at: string | null
+          loading_demurrage_rate: number | null
           loading_finished_at: string | null
+          loading_free_hours: number | null
           manager_id: string | null
           net_profit: number | null
           notes: string | null
@@ -388,7 +390,9 @@ export type Database = {
           truck_id: string | null
           unloading_arrived_at: string | null
           unloading_date: string | null
+          unloading_demurrage_rate: number | null
           unloading_finished_at: string | null
+          unloading_free_hours: number | null
           updated_at: string
           vat_amount: number
         }
@@ -421,7 +425,9 @@ export type Database = {
           id?: string
           is_international?: boolean
           loading_arrived_at?: string | null
+          loading_demurrage_rate?: number | null
           loading_finished_at?: string | null
+          loading_free_hours?: number | null
           manager_id?: string | null
           net_profit?: number | null
           notes?: string | null
@@ -439,7 +445,9 @@ export type Database = {
           truck_id?: string | null
           unloading_arrived_at?: string | null
           unloading_date?: string | null
+          unloading_demurrage_rate?: number | null
           unloading_finished_at?: string | null
+          unloading_free_hours?: number | null
           updated_at?: string
           vat_amount?: number
         }
@@ -472,7 +480,9 @@ export type Database = {
           id?: string
           is_international?: boolean
           loading_arrived_at?: string | null
+          loading_demurrage_rate?: number | null
           loading_finished_at?: string | null
+          loading_free_hours?: number | null
           manager_id?: string | null
           net_profit?: number | null
           notes?: string | null
@@ -490,7 +500,9 @@ export type Database = {
           truck_id?: string | null
           unloading_arrived_at?: string | null
           unloading_date?: string | null
+          unloading_demurrage_rate?: number | null
           unloading_finished_at?: string | null
+          unloading_free_hours?: number | null
           updated_at?: string
           vat_amount?: number
         }
