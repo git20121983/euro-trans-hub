@@ -28,9 +28,10 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
-    const { imageUrl } = await req.json();
-    if (typeof imageUrl !== 'string' || imageUrl.length < 10) {
-      return new Response(JSON.stringify({ error: 'imageUrl обовʼязковий' }), {
+    const { imageUrl, imageBase64 } = await req.json();
+    const image = typeof imageBase64 === 'string' && imageBase64.length > 10 ? imageBase64 : imageUrl;
+    if (typeof image !== 'string' || image.length < 10) {
+      return new Response(JSON.stringify({ error: 'imageUrl або imageBase64 обовʼязковий' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
@@ -53,7 +54,7 @@ Deno.serve(async (req) => {
             role: 'user',
             content: [
               { type: 'text', text: 'Перевір цей документ.' },
-              { type: 'image_url', image_url: { url: imageUrl } },
+              { type: 'image_url', image_url: { url: image } },
             ],
           },
         ],
