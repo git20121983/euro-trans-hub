@@ -62,13 +62,15 @@ export default function CmrScanner({
       if (upErr) throw new Error(upErr.message);
       setUploadedPath(path);
 
-      const { data: signed } = await supabase.storage
-        .from("cmr-documents")
-        .createSignedUrl(path, 3600);
-      if (!signed?.signedUrl) throw new Error("Не вдалося отримати посилання");
+      const imageBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(new Error("Не вдалося прочитати фото"));
+        reader.readAsDataURL(file);
+      });
 
       const { data, error } = await supabase.functions.invoke("verify-cmr", {
-        body: { imageUrl: signed.signedUrl },
+        body: { imageBase64 },
       });
       if (error) throw new Error(error.message);
       const res = data as CmrResult;
