@@ -15,6 +15,8 @@ import DriverProfileMenu from "@/components/driver/DriverProfileMenu";
 import ExpensesPanel from "@/components/expenses/ExpensesPanel";
 import CustomsSelectModal from "@/components/driver/CustomsSelectModal";
 import DemurrageControls from "@/components/driver/DemurrageControls";
+import CmrScanner from "@/components/driver/CmrScanner";
+
 
 type Order = Tables<"orders">;
 type Driver = Tables<"drivers">;
@@ -667,7 +669,20 @@ export default function DriverDashboard() {
                       }
                     />
                   </div>
+
+                  {/* CMR AI scan */}
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <CmrScanner
+                      orderId={order.id}
+                      orderNumber={order.order_number}
+                      cmrUrl={(order as unknown as { cmr_document_url?: string | null }).cmr_document_url}
+                      stampVerified={(order as unknown as { cmr_stamp_verified?: boolean }).cmr_stamp_verified}
+                      signatureVerified={(order as unknown as { cmr_signature_verified?: boolean }).cmr_signature_verified}
+                      onVerified={() => user && fetchDriverData(user.id)}
+                    />
+                  </div>
                 </div>
+
 
 
                 <div className="px-4 py-2 border-t border-border">
