@@ -25,6 +25,8 @@ import { toast } from "sonner";
 import ExpensesPanel, { toUah } from "@/components/expenses/ExpensesPanel";
 import DemurrageTimer from "@/components/demurrage/DemurrageTimer";
 import { getDemurrageSettings, getLegDemurrageSettings, LEG_LABEL } from "@/lib/demurrage";
+import CmrVerifiedCard from "@/components/admin/CmrVerifiedCard";
+
 
 interface DriverOption {
   id: string;
@@ -507,6 +509,17 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
 
               {/* Documents */}
               <TabsContent value="documents" className="mt-4 space-y-3">
+                <CmrVerifiedCard
+                  orderId={order.id}
+                  orderNumber={order.order_number}
+                  cmrUrl={(order as unknown as { cmr_document_url?: string | null }).cmr_document_url}
+                  stampVerified={(order as unknown as { cmr_stamp_verified?: boolean }).cmr_stamp_verified}
+                  signatureVerified={(order as unknown as { cmr_signature_verified?: boolean }).cmr_signature_verified}
+                  quality={(order as unknown as { cmr_quality?: string | null }).cmr_quality}
+                  notes={(order as unknown as { cmr_notes?: string | null }).cmr_notes}
+                  verifiedAt={(order as unknown as { cmr_verified_at?: string | null }).cmr_verified_at}
+                />
+
                 <label className="block">
                   <Button variant="outline" className="w-full gap-2" disabled={uploading} asChild>
                     <span>

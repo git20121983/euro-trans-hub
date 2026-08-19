@@ -349,6 +349,12 @@ export type Database = {
           client_name: string
           client_phone: string | null
           client_user_id: string | null
+          cmr_document_url: string | null
+          cmr_notes: string | null
+          cmr_quality: string | null
+          cmr_signature_verified: boolean
+          cmr_stamp_verified: boolean
+          cmr_verified_at: string | null
           created_at: string
           currency: string
           demurrage_amount: number
@@ -404,6 +410,12 @@ export type Database = {
           client_name: string
           client_phone?: string | null
           client_user_id?: string | null
+          cmr_document_url?: string | null
+          cmr_notes?: string | null
+          cmr_quality?: string | null
+          cmr_signature_verified?: boolean
+          cmr_stamp_verified?: boolean
+          cmr_verified_at?: string | null
           created_at?: string
           currency?: string
           demurrage_amount?: number
@@ -459,6 +471,12 @@ export type Database = {
           client_name?: string
           client_phone?: string | null
           client_user_id?: string | null
+          cmr_document_url?: string | null
+          cmr_notes?: string | null
+          cmr_quality?: string | null
+          cmr_signature_verified?: boolean
+          cmr_stamp_verified?: boolean
+          cmr_verified_at?: string | null
           created_at?: string
           currency?: string
           demurrage_amount?: number
