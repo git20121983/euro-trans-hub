@@ -349,6 +349,7 @@ export type Database = {
           client_name: string
           client_phone: string | null
           client_user_id: string | null
+          cmr_ai_result: Json | null
           cmr_document_url: string | null
           cmr_notes: string | null
           cmr_quality: string | null
@@ -410,6 +411,7 @@ export type Database = {
           client_name: string
           client_phone?: string | null
           client_user_id?: string | null
+          cmr_ai_result?: Json | null
           cmr_document_url?: string | null
           cmr_notes?: string | null
           cmr_quality?: string | null
@@ -471,6 +473,7 @@ export type Database = {
           client_name?: string
           client_phone?: string | null
           client_user_id?: string | null
+          cmr_ai_result?: Json | null
           cmr_document_url?: string | null
           cmr_notes?: string | null
           cmr_quality?: string | null
