@@ -62,10 +62,17 @@ export default function CmrVerifiedCard({
         )}
       </div>
 
-      <div className="text-[11px] text-muted-foreground space-y-0.5">
-        <p>Печатка: {stampVerified ? "виявлено" : "не виявлено"} · Підпис: {signatureVerified ? "виявлено" : "не виявлено"}</p>
-        {quality && <p>Якість фото: {quality}</p>}
-        {notes && <p>{notes}</p>}
+      <div className="rounded-lg border border-border/50 bg-background/30 divide-y divide-border/40 text-[11px]">
+        <Detail label="Це транспортний документ" ok={ai.is_document ?? true} />
+        <Detail label="Печатка отримувача (гр. 24)" ok={!!stampVerified} />
+        <Detail label="Підпис отримувача" ok={!!signatureVerified} />
+        <div className="flex items-center justify-between px-2 py-1.5">
+          <span className="text-muted-foreground">Якість фото</span>
+          <span className="font-medium">{quality ? (QUALITY_LABEL[quality] ?? quality) : "—"}</span>
+        </div>
+        {(notes || ai.notes) && (
+          <p className="px-2 py-1.5 text-muted-foreground">{notes || String(ai.notes)}</p>
+        )}
       </div>
 
       <div className="flex gap-2">
