@@ -14,10 +14,15 @@ interface Props {
   quality?: string | null;
   notes?: string | null;
   verifiedAt?: string | null;
+  aiResult?: Record<string, unknown> | null;
 }
 
+const QUALITY_LABEL: Record<string, string> = {
+  good: "добра", clear: "добра", blurry: "розмите", dark: "темне", cropped: "обрізане",
+};
+
 export default function CmrVerifiedCard({
-  orderNumber, cmrUrl, stampVerified, signatureVerified, quality, notes, verifiedAt,
+  orderNumber, cmrUrl, stampVerified, signatureVerified, quality, notes, verifiedAt, aiResult,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [signed, setSigned] = useState<string | null>(null);
