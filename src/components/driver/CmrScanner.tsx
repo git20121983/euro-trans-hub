@@ -99,6 +99,7 @@ export default function CmrScanner({
         cmr_quality: res?.quality ?? null,
         cmr_notes: res?.notes ?? null,
         cmr_verified_at: new Date().toISOString(),
+        cmr_ai_result: (res ?? null) as never,
         status: "awaiting_payment",
       } as never)
       .eq("id", orderId);
