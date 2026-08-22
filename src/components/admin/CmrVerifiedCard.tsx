@@ -41,6 +41,7 @@ export default function CmrVerifiedCard({
   if (!cmrUrl) return null;
 
   const fullyVerified = !!stampVerified && !!signatureVerified;
+  const ai = (aiResult ?? {}) as { is_document?: boolean; notes?: string };
 
   return (
     <div
@@ -98,6 +99,17 @@ export default function CmrVerifiedCard({
           )}
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function Detail({ label, ok }: { label: string; ok: boolean }) {
+  return (
+    <div className="flex items-center justify-between px-2 py-1.5">
+      <span className="text-muted-foreground">{label}</span>
+      <span className={`font-medium ${ok ? "text-emerald-400" : "text-red-400"}`}>
+        {ok ? "виявлено" : "не виявлено"}
+      </span>
     </div>
   );
 }
