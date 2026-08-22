@@ -518,6 +518,7 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
                   quality={(order as unknown as { cmr_quality?: string | null }).cmr_quality}
                   notes={(order as unknown as { cmr_notes?: string | null }).cmr_notes}
                   verifiedAt={(order as unknown as { cmr_verified_at?: string | null }).cmr_verified_at}
+                  aiResult={(order as unknown as { cmr_ai_result?: Record<string, unknown> | null }).cmr_ai_result}
                 />
 
                 <label className="block">
