@@ -344,6 +344,7 @@ export type Database = {
         Row: {
           actual_fuel_cost: number | null
           allowance_amount: number
+          cargo: string | null
           cargo_type: string
           cargo_weight: number | null
           client_name: string
@@ -370,6 +371,7 @@ export type Database = {
           driver_salary: number | null
           exchange_rate: number | null
           free_hours: number
+          freight: number | null
           freight_price_original: number | null
           freight_price_uah: number | null
           fuel_cost: number | null
@@ -388,6 +390,7 @@ export type Database = {
           paid_amount: number
           payment_date: string | null
           payment_status: string
+          price: number | null
           route: string | null
           status: string
           toll_cost: number | null
@@ -406,68 +409,7 @@ export type Database = {
         Insert: {
           actual_fuel_cost?: number | null
           allowance_amount?: number
-          cargo_type?: string
-          cargo_weight?: number | null
-          client_name: string
-          client_phone?: string | null
-          client_user_id?: string | null
-          cmr_ai_result?: Json | null
-          cmr_document_url?: string | null
-          cmr_notes?: string | null
-          cmr_quality?: string | null
-          cmr_signature_verified?: boolean
-          cmr_stamp_verified?: boolean
-          cmr_verified_at?: string | null
-          created_at?: string
-          currency?: string
-          demurrage_amount?: number
-          demurrage_currency?: string
-          demurrage_hours?: number
-          demurrage_rate?: number
-          depreciation_cost?: number | null
-          destination: string
-          distance: number
-          driver_advance?: number
-          driver_id?: string | null
-          driver_salary?: number | null
-          exchange_rate?: number | null
-          free_hours?: number
-          freight_price_original?: number | null
-          freight_price_uah?: number | null
-          fuel_cost?: number | null
-          fuel_price?: number | null
-          id?: string
-          is_international?: boolean
-          loading_arrived_at?: string | null
-          loading_demurrage_rate?: number | null
-          loading_finished_at?: string | null
-          loading_free_hours?: number | null
-          manager_id?: string | null
-          net_profit?: number | null
-          notes?: string | null
-          order_number?: string
-          origin: string
-          paid_amount?: number
-          payment_date?: string | null
-          payment_status?: string
-          route?: string | null
-          status?: string
-          toll_cost?: number | null
-          total_amount?: number | null
-          total_price?: number | null
-          trip_date?: string | null
-          truck_id?: string | null
-          unloading_arrived_at?: string | null
-          unloading_date?: string | null
-          unloading_demurrage_rate?: number | null
-          unloading_finished_at?: string | null
-          unloading_free_hours?: number | null
-          updated_at?: string
-          vat_amount?: number
-        }
-        Update: {
-          actual_fuel_cost?: number | null
-          allowance_amount?: number
+          cargo?: string | null
           cargo_type?: string
           cargo_weight?: number | null
           client_name?: string
@@ -494,6 +436,7 @@ export type Database = {
           driver_salary?: number | null
           exchange_rate?: number | null
           free_hours?: number
+          freight?: number | null
           freight_price_original?: number | null
           freight_price_uah?: number | null
           fuel_cost?: number | null
@@ -512,6 +455,72 @@ export type Database = {
           paid_amount?: number
           payment_date?: string | null
           payment_status?: string
+          price?: number | null
+          route?: string | null
+          status?: string
+          toll_cost?: number | null
+          total_amount?: number | null
+          total_price?: number | null
+          trip_date?: string | null
+          truck_id?: string | null
+          unloading_arrived_at?: string | null
+          unloading_date?: string | null
+          unloading_demurrage_rate?: number | null
+          unloading_finished_at?: string | null
+          unloading_free_hours?: number | null
+          updated_at?: string
+          vat_amount?: number
+        }
+        Update: {
+          actual_fuel_cost?: number | null
+          allowance_amount?: number
+          cargo?: string | null
+          cargo_type?: string
+          cargo_weight?: number | null
+          client_name?: string
+          client_phone?: string | null
+          client_user_id?: string | null
+          cmr_ai_result?: Json | null
+          cmr_document_url?: string | null
+          cmr_notes?: string | null
+          cmr_quality?: string | null
+          cmr_signature_verified?: boolean
+          cmr_stamp_verified?: boolean
+          cmr_verified_at?: string | null
+          created_at?: string
+          currency?: string
+          demurrage_amount?: number
+          demurrage_currency?: string
+          demurrage_hours?: number
+          demurrage_rate?: number
+          depreciation_cost?: number | null
+          destination?: string
+          distance?: number
+          driver_advance?: number
+          driver_id?: string | null
+          driver_salary?: number | null
+          exchange_rate?: number | null
+          free_hours?: number
+          freight?: number | null
+          freight_price_original?: number | null
+          freight_price_uah?: number | null
+          fuel_cost?: number | null
+          fuel_price?: number | null
+          id?: string
+          is_international?: boolean
+          loading_arrived_at?: string | null
+          loading_demurrage_rate?: number | null
+          loading_finished_at?: string | null
+          loading_free_hours?: number | null
+          manager_id?: string | null
+          net_profit?: number | null
+          notes?: string | null
+          order_number?: string
+          origin?: string
+          paid_amount?: number
+          payment_date?: string | null
+          payment_status?: string
+          price?: number | null
           route?: string | null
           status?: string
           toll_cost?: number | null
