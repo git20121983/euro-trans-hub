@@ -114,11 +114,21 @@ export default function OrderCard({ order, index, isSelected, driverName, truckP
           </p>
 
           {/* Row 3: Route with truck icon */}
-          <div className="flex items-center gap-1.5 text-xs">
-            <span className="text-foreground/80 font-medium truncate max-w-[100px]">{order.origin}</span>
-            <TruckIcon className="w-3.5 h-3.5 text-secondary flex-shrink-0" />
-            <span className="text-foreground/80 font-medium truncate max-w-[100px]">{order.destination}</span>
-          </div>
+          {order.destination?.trim() ? (
+            <div className="flex items-center gap-1.5 text-xs">
+              <span className="text-foreground/80 font-medium truncate max-w-[100px]">{order.origin}</span>
+              <TruckIcon className="w-3.5 h-3.5 text-secondary flex-shrink-0" />
+              <span className="text-foreground/80 font-medium truncate max-w-[100px]">{order.destination}</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 text-xs">
+              <TruckIcon className="w-3.5 h-3.5 text-secondary flex-shrink-0" />
+              <span className="text-foreground/80 font-medium truncate">
+                {order.route?.trim() || order.origin || "Маршрут не вказано"}
+              </span>
+            </div>
+          )}
+
 
           {/* Row 4: Driver + truck plate + distance */}
           <div className="flex items-center gap-1.5 flex-wrap">
