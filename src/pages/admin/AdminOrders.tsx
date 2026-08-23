@@ -73,6 +73,47 @@ export default function AdminOrders() {
     fetchData();
   }, [fetchData]);
 
+  // Realtime sync: new orders (e.g. from Telegram Bot via Make) appear instantly
+  useEffect(() => {
+    const channel = supabase
+      .channel("orders-kanban")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "orders" },
+        (payload) => {
+          const newOrder = payload.new as Order;
+          setOrders((prev) =>
+            prev.some((o) => o.id === newOrder.id) ? prev : [newOrder, ...prev]
+          );
+          toast.success("New order received from Telegram Bot & saved to Google Sheets!", {
+            description: `${newOrder.order_number} · ${newOrder.origin || "?"} → ${newOrder.destination || "?"}`,
+          });
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "orders" },
+        (payload) => {
+          const updated = payload.new as Order;
+          setOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "orders" },
+        (payload) => {
+          const removed = payload.old as { id: string };
+          setOrders((prev) => prev.filter((o) => o.id !== removed.id));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+
   const onDragEnd = useCallback(async (result: DropResult) => {
     const { draggableId, destination } = result;
     if (!destination) return;
