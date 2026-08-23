@@ -344,6 +344,7 @@ export type Database = {
         Row: {
           actual_fuel_cost: number | null
           allowance_amount: number
+          cargo: string | null
           cargo_type: string
           cargo_weight: number | null
           client_name: string
@@ -370,6 +371,7 @@ export type Database = {
           driver_salary: number | null
           exchange_rate: number | null
           free_hours: number
+          freight: number | null
           freight_price_original: number | null
           freight_price_uah: number | null
           fuel_cost: number | null
@@ -407,6 +409,7 @@ export type Database = {
         Insert: {
           actual_fuel_cost?: number | null
           allowance_amount?: number
+          cargo?: string | null
           cargo_type?: string
           cargo_weight?: number | null
           client_name?: string
@@ -433,6 +436,7 @@ export type Database = {
           driver_salary?: number | null
           exchange_rate?: number | null
           free_hours?: number
+          freight?: number | null
           freight_price_original?: number | null
           freight_price_uah?: number | null
           fuel_cost?: number | null
@@ -470,6 +474,7 @@ export type Database = {
         Update: {
           actual_fuel_cost?: number | null
           allowance_amount?: number
+          cargo?: string | null
           cargo_type?: string
           cargo_weight?: number | null
           client_name?: string
@@ -496,6 +501,7 @@ export type Database = {
           driver_salary?: number | null
           exchange_rate?: number | null
           free_hours?: number
+          freight?: number | null
           freight_price_original?: number | null
           freight_price_uah?: number | null
           fuel_cost?: number | null
