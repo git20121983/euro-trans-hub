@@ -388,6 +388,7 @@ export type Database = {
           paid_amount: number
           payment_date: string | null
           payment_status: string
+          price: number | null
           route: string | null
           status: string
           toll_cost: number | null
@@ -408,7 +409,7 @@ export type Database = {
           allowance_amount?: number
           cargo_type?: string
           cargo_weight?: number | null
-          client_name: string
+          client_name?: string
           client_phone?: string | null
           client_user_id?: string | null
           cmr_ai_result?: Json | null
@@ -425,8 +426,8 @@ export type Database = {
           demurrage_hours?: number
           demurrage_rate?: number
           depreciation_cost?: number | null
-          destination: string
-          distance: number
+          destination?: string
+          distance?: number
           driver_advance?: number
           driver_id?: string | null
           driver_salary?: number | null
@@ -446,10 +447,11 @@ export type Database = {
           net_profit?: number | null
           notes?: string | null
           order_number?: string
-          origin: string
+          origin?: string
           paid_amount?: number
           payment_date?: string | null
           payment_status?: string
+          price?: number | null
           route?: string | null
           status?: string
           toll_cost?: number | null
@@ -512,6 +514,7 @@ export type Database = {
           paid_amount?: number
           payment_date?: string | null
           payment_status?: string
+          price?: number | null
           route?: string | null
           status?: string
           toll_cost?: number | null
