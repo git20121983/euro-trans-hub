@@ -510,6 +510,7 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
               {/* Documents */}
               <TabsContent value="documents" className="mt-4 space-y-3">
                 <CmrVerifiedCard
+                  order={order}
                   orderId={order.id}
                   orderNumber={order.order_number}
                   cmrUrl={(order as unknown as { cmr_document_url?: string | null }).cmr_document_url}

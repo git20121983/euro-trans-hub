@@ -3,7 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BadgeCheck, AlertTriangle, Eye, FileText, Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { generateInvoicePdf } from "@/lib/invoicePdf";
+import type { Tables } from "@/integrations/supabase/types";
 
 interface Props {
   orderId: string;
@@ -15,6 +17,7 @@ interface Props {
   notes?: string | null;
   verifiedAt?: string | null;
   aiResult?: Record<string, unknown> | null;
+  order?: Tables<"orders">;
 }
 
 const QUALITY_LABEL: Record<string, string> = {
@@ -22,12 +25,19 @@ const QUALITY_LABEL: Record<string, string> = {
 };
 
 export default function CmrVerifiedCard({
-  orderNumber, cmrUrl, stampVerified, signatureVerified, quality, notes, verifiedAt, aiResult,
+  orderNumber, cmrUrl, stampVerified, signatureVerified, quality, notes, verifiedAt, aiResult, order,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [signed, setSigned] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [gen, setGen] = useState(false);
+  const makeInvoice = async () => {
+    if (!order) return;
+    setGen(true);
+    try { const n = await generateInvoicePdf(order); toast.success(`Рахунок ${n} створено`); }
+    catch (e) { toast.error("Не вдалося створити PDF", { description: String(e).slice(0, 120) }); }
+    finally { setGen(false); }
+  };
 
   useEffect(() => {
     if (!open || !cmrUrl) return;
@@ -80,8 +90,8 @@ export default function CmrVerifiedCard({
         <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => setOpen(true)}>
           <Eye className="w-3.5 h-3.5" /> Переглянути
         </Button>
-        <Button size="sm" className="gap-1 text-xs" onClick={() => navigate("/admin/finance")}>
-          <FileText className="w-3.5 h-3.5" /> Створити рахунок
+        <Button size="sm" className="gap-1 text-xs" disabled={gen || !order} onClick={makeInvoice}>
+          {gen ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />} PDF-рахунок
         </Button>
       </div>
 
