@@ -62,7 +62,6 @@ export async function generateInvoicePdf(order: Order) {
     await html2pdf().set({
       margin: 8, filename: `${number}.pdf`, image: { type: "jpeg", quality: 0.95 },
       html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: "mm", format: "a4" },
-      pagebreak: { mode: ["avoid-all"] },
     }).from(el).save();
   } finally {
     el.remove();
