@@ -19,9 +19,15 @@ import {
 import {
   Clock, FileText, Upload, MapPin, User, Phone,
   Package, Truck, Loader2, Download, File, DollarSign,
-  Fuel, AlertTriangle, Trash2, Save, Wallet,
+  Fuel, AlertTriangle, Trash2, Save, Wallet, CheckCircle2, RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  COMPLETED_ORDER_STATUS,
+  getPreviousOrderStatus,
+  shouldWarnAboutUnpaidOrder,
+} from "@/lib/orderCompletion";
 import ExpensesPanel, { toUah } from "@/components/expenses/ExpensesPanel";
 import DemurrageTimer from "@/components/demurrage/DemurrageTimer";
 import { getDemurrageSettings, getLegDemurrageSettings, LEG_LABEL } from "@/lib/demurrage";
@@ -41,7 +47,7 @@ interface OrderEvent {
   user_id: string | null;
   event_type: string;
   description: string;
-  metadata: Record<string, unknown>;
+  metadata: Record<string, unknown> | null;
   created_at: string;
 }
 
@@ -74,6 +80,7 @@ const FUEL_RATE = 33; // л/100км
 const DRIVER_SALARY_RATE = 6; // грн/км
 
 export default function OrderDetailPanel({ order, open, onOpenChange, driverName, truckPlate, onOrderUpdate }: OrderDetailPanelProps) {
+  const { isAdmin } = useAuth();
   const [events, setEvents] = useState<OrderEvent[]>([]);
   const [files, setFiles] = useState<StorageFile[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
@@ -88,6 +95,7 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
   const [selectedDriverId, setSelectedDriverId] = useState<string>("none");
   const [savingDriver, setSavingDriver] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [changingCompletion, setChangingCompletion] = useState(false);
   const [loadingFreeHoursInput, setLoadingFreeHoursInput] = useState("4");
   const [loadingRateInput, setLoadingRateInput] = useState("25");
   const [unloadingFreeHoursInput, setUnloadingFreeHoursInput] = useState("4");
@@ -109,7 +117,7 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
     setLoadingRateInput(String(load.rate));
     setUnloadingFreeHoursInput(String(unload.freeHours));
     setUnloadingRateInput(String(unload.rate));
-  }, [order?.id, open]);
+  }, [order?.id, order?.status, open]);
 
   const saveDemurrageSettings = async () => {
     if (!order) return;
@@ -305,7 +313,27 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
     }
   };
 
+  const changeOrderCompletion = async (close: boolean) => {
+    if (!order || !isAdmin) return;
+    setChangingCompletion(true);
+    const nextStatus = close ? COMPLETED_ORDER_STATUS : getPreviousOrderStatus(events);
+    const { error } = await supabase
+      .from("orders")
+      .update({ status: nextStatus })
+      .eq("id", order.id);
+
+    if (error) {
+      toast.error(close ? "Помилка закриття рейсу" : "Помилка повторного відкриття рейсу");
+    } else {
+      toast.success(close ? `Рейс ${order.order_number} закрито` : `Рейс ${order.order_number} відкрито знову`);
+      await fetchEvents();
+      onOrderUpdate?.();
+    }
+    setChangingCompletion(false);
+  };
+
   const statusInfo = order ? STATUS_LABELS[order.status] ?? { label: order.status, color: "bg-muted" } : null;
+  const isClosed = order?.status === COMPLETED_ORDER_STATUS;
 
 
   return (
@@ -436,6 +464,61 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
                   ))}
                 </div>
 
+                {isAdmin && (
+                  <div className="pt-3 mt-3 border-t border-border space-y-2">
+                    {isClosed ? (
+                      <>
+                        <div className="flex items-center justify-center gap-2 rounded-lg border border-green-500/30 bg-green-500/10 px-3 py-2 text-sm font-semibold text-green-400">
+                          <CheckCircle2 className="w-4 h-4" /> Закрито
+                        </div>
+                        <Button
+                          variant="outline"
+                          className="w-full gap-2 border-green-500/40 text-green-400 hover:bg-green-500/10 hover:text-green-300"
+                          onClick={() => changeOrderCompletion(false)}
+                          disabled={changingCompletion || loadingEvents}
+                        >
+                          {changingCompletion ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+                          {changingCompletion ? "Відкриття..." : "Відкрити знову"}
+                        </Button>
+                      </>
+                    ) : (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            className="w-full gap-2 bg-green-600 text-white hover:bg-green-700"
+                            disabled={changingCompletion}
+                          >
+                            <CheckCircle2 className="w-4 h-4" /> Закрити рейс
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Закрити рейс {order.order_number} ?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Рейс буде переміщено до колонки «Завершено».
+                            </AlertDialogDescription>
+                            {shouldWarnAboutUnpaidOrder(order.payment_status) && (
+                              <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-300">
+                                <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                                <span>Рейс не оплачено повністю. Закрити все одно?</span>
+                              </div>
+                            )}
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Скасувати</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => changeOrderCompletion(true)}
+                              className="bg-green-600 text-white hover:bg-green-700"
+                            >
+                              Закрити рейс
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                  </div>
+                )}
+
                 {/* Danger zone */}
                 <div className="pt-3 mt-3 border-t border-border">
                   <AlertDialog>
@@ -496,6 +579,13 @@ export default function OrderDetailPanel({ order, open, onOpenChange, driverName
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm">{ev.description}</p>
+                            {ev.user_id && (
+                              <p className="text-[11px] text-muted-foreground mt-0.5">
+                                Виконав: {typeof ev.metadata?.actor_name === "string" && ev.metadata.actor_name
+                                  ? ev.metadata.actor_name
+                                  : ev.user_id}
+                              </p>
+                            )}
                             <p className="text-[10px] text-muted-foreground mt-0.5">
                               {formatDate(ev.created_at)}
                             </p>

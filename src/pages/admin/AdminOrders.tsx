@@ -54,6 +54,9 @@ export default function AdminOrders() {
     ]);
     const ordersData = ordersRes.data ?? [];
     setOrders(ordersData);
+    setSelectedOrder((current) =>
+      current ? ordersData.find((order) => order.id === current.id) ?? null : null
+    );
     setDrivers(driversRes.data ?? []);
     setTrucks(trucksRes.data ?? []);
 
@@ -96,6 +99,7 @@ export default function AdminOrders() {
         (payload) => {
           const updated = payload.new as Order;
           setOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
+          setSelectedOrder((current) => current?.id === updated.id ? updated : current);
         }
       )
       .on(
